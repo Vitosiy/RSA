@@ -4,6 +4,7 @@
 #include <string>
 #include <algorithm>
 #include <fstream>
+#include <bitset>
 
 using namespace std;
 
@@ -15,12 +16,9 @@ public:
 	//BigNum(const string& Num);
 	BigNum(const unsigned int BlockSize, const unsigned int Offset, const std::string& Filename);
 	BigNum(const std::string& Str);
-	void Print();
 	static BigNum Add(const BigNum& A, const BigNum& B);
 	static BigNum Sub(const BigNum& A, const BigNum& B);
 	static void Mul(const BigNum& A, const BigNum& B, BigNum& Res);
-	static void Div(BigNum& A, unsigned int B, BigNum& Reminder);
-	static void Div(BigNum& A, unsigned int B);
 	static void Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivision, BigNum& Reminder, bool& MistakeWasMade); //TODO
 	
 	friend bool operator == (const BigNum&, const BigNum&);
@@ -36,18 +34,17 @@ public:
 	friend BigNum operator * (const BigNum&, const BigNum&);
 	friend BigNum operator % (const BigNum&, const BigNum&); 
 	friend BigNum operator / (const BigNum&, const BigNum&); 
-	friend BigNum operator / (BigNum&, unsigned int);
 
-
-
+	std::string ToBin();
 	BigNum& Pow(const unsigned int Times); 
-	BigNum& FastPow(BigNum& Num, BigNum& Deg, BigNum& Mod);
+	static BigNum& FastPow(BigNum& Num, BigNum& Deg, BigNum& Mod);
 	unsigned int Size();
-	string NumAsString();
+	void Print(bool flag);
 
 
 
 private:
+	void PrintP(bool flag);
 	std::vector<unsigned int> LongNum;
 	bool Sing : 1;
 	bool NumCreated : 1;

@@ -1,40 +1,5 @@
 #include "BigNum.h"
 
-/*BigNum::BigNum() {
-	this->LongNum.push_back(0);
-}
-
-BigNum::BigNum(const string & Num) {
-	string LocalNum = Num;
-	bool DelLastZero = false;
-	while (LocalNum.size() > 1 && LocalNum.back() == 0) {
-		DelLastZero = true;
-		reverse(LocalNum.begin(), LocalNum.end());
-		LocalNum.pop_back();
-		reverse(LocalNum.begin(), LocalNum.end());
-	}
-
-	for (int i = (int)LocalNum.length(); i > 0; i -= 9) {
-		if (i < 9) {
-			this->LongNum.push_back(atoi(LocalNum.substr(0, i).c_str()));
-		}
-		else {
-			this->LongNum.push_back(atoi(LocalNum.substr(i - 9, 9).c_str()));
-		}
-	}
-	
-	if (DelLastZero) {
-		this->LongNum.pop_back();
-	}
-}
-
-void BigNum::Print() {
-	printf("%d", this->LongNum.empty() ? 0 : this->LongNum.back());
-	for (int i = (int)this->LongNum.size() - 2; i >= 0; --i) {
-		printf("%09d", this->LongNum[i]);
-	}
-	cout << endl;
-}*/
 
 BigNum::BigNum()
 {
@@ -81,22 +46,29 @@ BigNum::BigNum(const std::string& Str) {
 	this->Sing = 0;
 }
 
-void BigNum::Print() {
-	for (auto it = LongNum.crbegin(); it != LongNum.crend(); ++it) {
 
-		std::cout << " " << std::hex << (char)(*it >> 24) << (char)(*it >> 16) << (char)(*it >> 8) << (char)(*it);
-		//std::cout << " " << *it;
-	}
-	std::cout << std::endl;
+void BigNum::Print(bool flag) {
+
+	this->PrintP(flag);
 }
 
+void BigNum::PrintP(bool flag) {
+	if (flag == 1) {
+		for (auto it = LongNum.crbegin(); it != LongNum.crend(); ++it) {
 
-/*void BigNum::Print() {
-	for (unsigned int i = 0; i < LongNum.size(); i++) {
-		std::cout << " " << std::hex <<this->LongNum[i];
+			std::cout << " " << std::hex << (char)(*it >> 24) << (char)(*it >> 16) << (char)(*it >> 8) << (char)(*it);
+		}
+		std::cout << std::endl;
 	}
-	std::cout << std::endl;
-}*/
+	if (flag == 0) {
+		for (auto it = LongNum.crbegin(); it != LongNum.crend(); ++it) {
+
+			std::cout << " " << *it;
+		}
+		std::cout << std::endl;
+	}
+}
+
 
 unsigned int BigNum::Size()
 {
@@ -208,42 +180,6 @@ void BigNum::Mul(const BigNum & A, const BigNum & B, BigNum & Res) {
 	Res.LongNum = res;
 }
 
-/*void BigNum::Div(BigNum& A, unsigned int B, BigNum& Reminder) {
-	if (B == 0) {
-		return;
-	}
-
-	unsigned int carry = 0;
-	for (int i = (int)A.LongNum.size() - 1; i >= 0; --i) {
-		long long cur = A.LongNum[i] + carry * 1ll * Base;
-		A.LongNum[i] = int(cur / B);
-		carry = int(cur % B);
-	}
-	BigNum Rem(to_string(carry));
-	Reminder.LongNum = Rem.LongNum;
-
-	while (A.LongNum.size() > 1 && A.LongNum.back() == 0) {
-		A.LongNum.pop_back();
-	}
-}*/
-
-/*void BigNum::Div(BigNum & A, unsigned int B) {
-	if (B == 0) {
-		return;
-	}
-
-	unsigned int carry = 0;
-	for (int i = (int)A.LongNum.size() - 1; i >= 0; --i) {
-		long long cur = A.LongNum[i] + carry * 1ll * Base;
-		A.LongNum[i] = int(cur / B);
-		carry = int(cur % B);
-	}
-
-	while (A.LongNum.size() > 1 && A.LongNum.back() == 0) {
-		A.LongNum.pop_back();
-	}
-}*/
-
 void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivision, BigNum& Reminder, bool& MistakeWasMade) {
 	
 	BigNum _A = A, _B = B;
@@ -269,13 +205,18 @@ void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivisi
 
 	for (unsigned int i = 0; i < (length-1); i++)
 	{
+		if (i >= _B.Size())
+			break;
 		if (_A.LongNum[i] >= _B.LongNum[i])
 		{
 			ResDiv.LongNum[0]++;
 		}
 	}
 
-	ResDiv.LongNum[0]--;
+	if (ResDiv.LongNum[0] > 1) {
+		ResDiv.LongNum[0]--;
+	}
+
 
 	IntegerResultOfDivision = ResDiv;
 	Reminder = (_A - (_B * ResDiv));
@@ -287,25 +228,24 @@ BigNum & BigNum::operator=(const BigNum & A) {
 	return *this;
 }
 
-
-
-/*void BigNum::ToBin(const BigNum & Num, BigNum & Res) {
-	BigNum Tmp("0");
-	BigNum Zero("0");
-	BigNum RemTmp("0");
-	string ResStr;
-	Tmp.LongNum = Num.LongNum;
-	while (Tmp > Zero) {
-		Div(Tmp, 2, RemTmp);
-		ResStr.push_back(RemTmp.LongNum[0] + 48);
+std::string BigNum::ToBin() {
+	std::string res;
+	for (unsigned int i = 0; i < this->LongNum.size(); i++) {
+		res = res + (std::bitset<32>(this->LongNum[i])).to_string();
 	}
 
-	reverse(ResStr.begin(), ResStr.end());
-	BigNum A(ResStr);
-	Res.LongNum = A.LongNum;
-}
+	return res;
+
+};
 
 BigNum & BigNum::Pow(const unsigned int Times) {
+	if(Times == 1)
+		return *this;
+
+	if (Times == 0)
+		return *this=1;
+
+
 	for (unsigned int i = 0; i < Times - 1; i++) {
 		BigNum::Mul(*this, *this, *this);
 	}
@@ -314,45 +254,35 @@ BigNum & BigNum::Pow(const unsigned int Times) {
 }
 
 BigNum & BigNum::FastPow(BigNum & Num, BigNum & Deg, BigNum & Mod) {
+	
+	BigNum _Num = Num;
 	//1:
-	BigNum Res("0");
-	BigNum BinNum(Res.NumAsString());
+	std::string deg = Deg.ToBin();
 
 	//2:
-	BigNum Len(to_string(Res.NumAsString().length()));
+	unsigned int n = deg.size();
 
 	//3:
-	vector<BigNum> Mass(Res.NumAsString().length());
+	vector<BigNum> Mass(n);
+	BigNum cur;
 	Mass[0] = Num % Mod;
 	BigNum IntDivRes("0"), Rem("0");
 	bool Flag = false;
-	for (unsigned int i = 1; i < Mass.size(); i++) {
-		Mass[i] = (Mass[i - 1] * Mass[i - 1]) % Mod;
+	for (unsigned int i = 1; i < n; i++) {
+		cur = Mass[i - 1] * Mass[i - 1];
+		Mass[i] = cur % Mod;
 	}
 
 	//4:
 	BigNum ResRes("1");
-	for (unsigned int i = 0; i < Res.NumAsString().length(); i++) {
-		ResRes = ResRes * Mass[i].Pow(BinNum.NumAsString()[Res.NumAsString().length() - i]);
+	for (unsigned int i = 0; i < n; i++) {
+		ResRes = ResRes * Mass[i].Pow(deg[n - i]);
 	}
+	BigNum result = ResRes % Mod;
 
 	//5:
-	return ResRes % Mod;
+	return result;
 }
-
-string BigNum::NumAsString() {
-	string Res, Tmp;
-	for (unsigned int i = this->LongNum.size(); i > 0; i--) {
-		Tmp = to_string(this->LongNum[i - 1]);
-		for (unsigned int j = 0; j < Tmp.size(); j++) {
-			Res.push_back(Tmp[j]);
-		}
-	}
-
-	return Res;
-}*/
-
-
 
 bool operator==(const BigNum & A, const BigNum & B) {
 	if (A.LongNum.size() != B.LongNum.size()) {
@@ -509,7 +439,3 @@ BigNum operator/(const BigNum & A, const BigNum & B) {
 	}
 }
 
-/*BigNum operator/(BigNum& A, unsigned int B) {
-	BigNum::Div(A, B);
-	return A;
-}*/
