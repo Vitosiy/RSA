@@ -11,7 +11,8 @@ BigNum::BigNum(unsigned int x)
 	this->LongNum.push_back(x);
 };
 
-BigNum::BigNum(const unsigned int BlockSize, const unsigned int Offset, const std::string& Filename) {
+
+BigNum::BigNum(unsigned int BlockSize, const unsigned int Offset, const std::string& Filename) {
 	this->Sing = 0;
 	std::fstream fstr(Filename, std::ios::binary | std::ios::in);
 	if (!fstr.is_open()) {
@@ -32,14 +33,34 @@ BigNum::BigNum(const unsigned int BlockSize, const unsigned int Offset, const st
 
 BigNum::BigNum(const std::string& Str) {
 	std::string SubStr;
+
 	for (unsigned int i = 0; i < Str.size(); i = i + 4) {
 		if (i + 4 > Str.size()) {
-			SubStr = std::string(Str.begin() + i, Str.end() - 1);
-
+			SubStr = std::string(Str.begin() + i, Str.end());
+			if (Str.size() - (i + 4) == -3)
+			{
+				std::reverse(LongNum.begin(), LongNum.end());
+				this->LongNum.push_back((int)((unsigned char)SubStr[0] << 24) | (int)((unsigned char)SubStr[1] << 16) | (int)((unsigned char)SubStr[2] << 8));
+			}
+			if (Str.size() - (i + 4) == -2)
+			{
+				std::reverse(LongNum.begin(), LongNum.end());
+				this->LongNum.push_back((int)((unsigned char)SubStr[0] << 24) | (int)((unsigned char)SubStr[1] << 16));
+				std::reverse(LongNum.begin(), LongNum.end());
+			}
+			if (Str.size() - (i + 4) == -1)
+			{
+				std::reverse(LongNum.begin(), LongNum.end());
+				this->LongNum.push_back((int)((unsigned char)SubStr[0] << 24));
+				std::reverse(LongNum.begin(), LongNum.end());
+			}
 		}
 		else {
 			SubStr = std::string(Str.begin() + i, Str.begin() + i + 4);
+			std::reverse(LongNum.begin(), LongNum.end());
 			this->LongNum.push_back((int)((unsigned char)SubStr[0] << 24) | (int)((unsigned char)SubStr[1] << 16) | (int)((unsigned char)SubStr[2] << 8) | (int)((unsigned char)SubStr[3]));
+			std::reverse(LongNum.begin(), LongNum.end());
+			std::fill(std::begin(SubStr), std::begin(SubStr) + 4, NULL);
 		}
 	}
 
@@ -67,6 +88,21 @@ void BigNum::PrintP(bool flag) {
 		}
 		std::cout << std::endl;
 	}
+}
+
+void BigNum::PrintF(const std::string& Filename)
+{
+	std::fstream filename(Filename, std::ios::binary | std::ios::out);
+	if (!filename.is_open()) {
+		this->NumCreated = 0;
+		return;
+	}
+	for (auto it = LongNum.crbegin(); it != LongNum.crend(); ++it) {
+
+		filename << std::hex << (char)(*it >> 24) << (char)(*it >> 16) << (char)(*it >> 8) << (char)(*it);
+	}
+	std::cout << std::endl;
+
 }
 
 

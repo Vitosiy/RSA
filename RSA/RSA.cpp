@@ -1,5 +1,7 @@
 #include "RSA.h"
 
+
+
 void RSA::generatePQ(BigNum& _p, BigNum& _q, int bit) {
 	mpz_t p,q;
 	mpz_init(p);
@@ -40,10 +42,10 @@ void RSA::encode(const std::string& pathToInputText, const std::string& pathToPu
 		calculateE();
 		d = calculateD(e, phi);
 		std::ofstream eFile("publicKey.txt"), dFile("privateKey.txt");
-		eFile << e << std::endl;
-		eFile << n << std::endl;
-		dFile << d << std::endl;
-		dFile << n << std::endl;
+		e.PrintF(eFile);
+		n.PrintF(eFile);
+		d.PrintF(eFile);
+		n.PrintF(eFile);
 		eFile.close();
 		dFile.close();
 	}
@@ -62,10 +64,11 @@ void RSA::encode(const std::string& pathToInputText, const std::string& pathToPu
 		std::cout << "Wrong path to text" << std::endl;
 		return;
 	}
-	while (fileText.get(ch)) {
-		BigNum encodeCh = BigNum(to_string((int)ch));
-		BigNum res = BigNum::FastPow(encodeCh,e,n);
-		fileOutputText << encodeCh << std::endl;
+	unsigned int BlockSize = 80;
+	BigNum Block(BlockSize, 0, fileText);
+	while () {
+		BigNum res = BigNum::FastPow(Block,e,n);
+		res.PrintF(fileOutputText);
 	}
 	fileText.close();
 	fileOutputText.close();
@@ -74,16 +77,16 @@ void RSA::encode(const std::string& pathToInputText, const std::string& pathToPu
 void RSA::decode(const std::string& pathToText, const std::string& pathToPrivateKey) {
 	std::string nStr, dStr;
 	std::ifstream dFile(pathToPrivateKey), fileText(pathToText);
+	unsigned int BlockSize = 80;
 	dFile >> dStr >> nStr;
 	dFile.close();
 	n = nStr;
 	d = dStr;
 	std::ofstream fileOutputText("outputDecode.txt", std::ios::app);
-	std::string str;
-	while (fileText >> str) {
-		BigNum decodeCh = (BigNum::FastPow(BigNum(str),d, n));
-		char res = (char)stoi(decodeCh.NumAsString());
-		fileOutputText << res;
+	BigNum Block(BlockSize, 0, fileText);
+	while () {
+		BigNum res = (BigNum::FastPow(Block,d, n));
+		res.PrintF(fileOutputText);
 	}
 	fileText.close();
 	fileOutputText.close();
