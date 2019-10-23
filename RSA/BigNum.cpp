@@ -113,7 +113,7 @@ BigNum BigNum::Add(const BigNum& A, const BigNum& B)
 		_B.LongNum[i] %= Base; 
 	}
 
-	if (_B.LongNum[length - 2] == 0)
+	if (_B.LongNum[length - 1] == 0)
 		length--;
 	return _B;
 }
@@ -172,7 +172,7 @@ BigNum BigNum::Sub(const BigNum& A, const BigNum& B)
 
 void BigNum::Mul(const BigNum & A, const BigNum & B, BigNum & Res) {
 
-	if (A == BigNum("0") || B == BigNum("0")) {
+	if (A == BigNum(0) || B == BigNum(0)) {
 		Res.LongNum = vector<unsigned int>(0);
 		return;
 	}
@@ -286,7 +286,7 @@ BigNum BigNum::FastPow(BigNum & Num, BigNum & Deg, BigNum & Mod) {
 	vector<BigNum> Mass(n);
 	BigNum cur;
 	Mass[0] = Num % Mod;
-	BigNum IntDivRes("0"), Rem("0");
+	BigNum IntDivRes(0), Rem(0);
 	bool Flag = false;
 	for (unsigned int i = 1; i < n; i++) {
 		cur = Mass[i - 1] * Mass[i - 1];
@@ -294,7 +294,7 @@ BigNum BigNum::FastPow(BigNum & Num, BigNum & Deg, BigNum & Mod) {
 	}
 
 	//4:
-	BigNum ResRes("1");
+	BigNum ResRes(1);
 	for (unsigned int i = 0; i < n; i++) {
 		ResRes = ResRes * Mass[i].Pow(deg[n - i]);
 	}
@@ -427,13 +427,13 @@ BigNum operator-=(BigNum& A, const BigNum& B)
 }
 
 BigNum operator*(const BigNum & A, const BigNum & B) {
-	BigNum Res("0");
+	BigNum Res;
 	BigNum::Mul(A, B, Res);
 	return Res;
 }
 
 BigNum operator%(const BigNum & A, const BigNum & B) {
-	BigNum IntDivRes("0"), Rem("0");
+	BigNum IntDivRes(0), Rem(0);
 	bool Flag=false;
 	BigNum::Div(A, B, IntDivRes, Rem, Flag);
 
@@ -441,13 +441,13 @@ BigNum operator%(const BigNum & A, const BigNum & B) {
 		return Rem;
 	}
 	else {
-		return BigNum("0");
+		return BigNum(0);
 	}
 	
 }
 
 BigNum operator/(const BigNum & A, const BigNum & B) {
-	BigNum IntDivRes("0"), Rem("0");
+	BigNum IntDivRes(0), Rem(0);
 	bool Flag=false;
 	BigNum::Div(A, B, IntDivRes, Rem, Flag);
 
@@ -455,6 +455,6 @@ BigNum operator/(const BigNum & A, const BigNum & B) {
 		return IntDivRes;
 	}
 	else {
-		return BigNum("0");
+		return BigNum(0);
 	}
 }

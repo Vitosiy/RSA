@@ -19,7 +19,7 @@ void RSA::generatePQ(BigNum& _p, BigNum& _q, int bit) {
 void RSA::calculateE() {
 	long long ferm[] = { 3, 5, 17, 257, 65537, 4294967297 };
 	srand(time(NULL));
-	e = BigNum(to_string(ferm[rand() % 6]));
+	e = BigNum(ferm[rand() % 6]);
 }
 
 BigNum RSA::calculateD(BigNum& e, BigNum& phi) {
@@ -27,18 +27,23 @@ BigNum RSA::calculateD(BigNum& e, BigNum& phi) {
 	BigNum d;
 	while (true) {
 		tmp = tmp + phi;
-		d = (tmp / e) + BigNum("1");
-		if ((d * e) % phi == BigNum("1"))
+		d = (tmp / e) + BigNum(1);
+		if ((d * e) % phi == BigNum(1))
 			return d;
 	}
 }
 
 void RSA::encode(const std::string& pathToInputText, const std::string& pathToPublicKey, const unsigned int mode) {
+	std::ifstream fileText(pathToInputText, std::ios::binary | std::ios::in);
+	if (!fileText) {
+		std::cout << "Wrong path to text" << std::endl;
+		return;
+	}
 	if (mode == 0) {
 		BigNum p, q;
 		generatePQ(p, q, 512);
 		n = p * q;
-		BigNum phi = (p - BigNum("1")) * (q - BigNum("1"));
+		BigNum phi = (p - BigNum(1)) * (q - BigNum(1));
 		calculateE();
 		d = calculateD(e, phi);
 		std::ofstream eFile("publicKey.txt", std::ios::app), dFile("privateKey.txt", std::ios::app);
@@ -58,11 +63,6 @@ void RSA::encode(const std::string& pathToInputText, const std::string& pathToPu
 		eFile.close();
 	}
 	std::ofstream fileOutputText("outputEncode.txt", std::ios::app);
-	std::ifstream fileText(pathToInputText, std::ios::binary | std::ios::in);
-	if (!fileText) {
-		std::cout << "Wrong path to text" << std::endl;
-		return;
-	}
 	unsigned int BlockSize = 80;
 	char* tmp = new char[BlockSize];
 	while (!fileText.eof()) {
