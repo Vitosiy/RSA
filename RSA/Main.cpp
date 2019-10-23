@@ -8,10 +8,7 @@ int main() {
 	setlocale(LC_ALL, "Rus");
 	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
-	std::locale::global(std::locale("rus"));
-
-
-
+	
 	int answer = 0;
 	std::string pathToText, pathToPrivateKey, pathToPublicKey;
 	while (true) {

@@ -12,25 +12,6 @@ BigNum::BigNum(unsigned int x)
 };
 
 
-/*BigNum::BigNum(unsigned int BlockSize, const unsigned int Offset, const std::string& Filename) {
-	this->Sing = 0;
-	std::fstream fstr(Filename, std::ios::binary | std::ios::in);
-	if (!fstr.is_open()) {
-		this->NumCreated = 0;
-		return;
-	}
-	fstr.seekg(Offset);
-	char Tmp[4];
-	for (int i = BlockSize; i >= 0; i = i - 4) {
-		fstr.read(Tmp, 4);
-		std::reverse(LongNum.begin(), LongNum.end());
-		this->LongNum.push_back((int)((unsigned char)Tmp[0] << 24) | (int)((unsigned char)Tmp[1] << 16) | (int)((unsigned char)Tmp[2] << 8) | (int)((unsigned char)Tmp[3]));
-		std::reverse(LongNum.begin(), LongNum.end());
-		std::fill(std::begin(Tmp), std::begin(Tmp) + 4, NULL);
-	}
-	this->NumCreated = 1;
-}*/
-
 BigNum::BigNum(const std::string& Str) {
 	std::string SubStr;
 
@@ -90,13 +71,8 @@ void BigNum::PrintP(bool flag) {
 	}
 }
 
-void BigNum::PrintF(const std::string& string)
+void BigNum::PrintF(ofstream& filename)
 {
-	std::fstream filename(Filename,std::ios::app);
-	if (!filename.is_open()) {
-		this->NumCreated = 0;
-		return;
-	}
 	for (auto it = LongNum.crbegin(); it != LongNum.crend(); ++it) {
 
 		filename << std::hex << (char)(*it >> 24) << (char)(*it >> 16) << (char)(*it >> 8) << (char)(*it);
@@ -125,15 +101,16 @@ BigNum BigNum::Add(const BigNum& A, const BigNum& B)
 	else
 		length = size_b;
 	size_a = _A.Size();
-	for (int i = 0; i < length; i++)
+	for (unsigned int i = 0; i < length; i++)
 	{
 		if (i >= size_a)
 			break;
-		_B.LongNum[i] += _A.LongNum[i]; // суммируем последние разряды чисел
-		if(((_A.LongNum[i] / Base) == true) & ((i+1) > (length-1)) )
+		_B.LongNum[i] += _A.LongNum[i]; 
+		if (_A.LongNum[i] / Base and i + 1 > length - 1) {
 			_B.LongNum.push_back(0);
-		_B.LongNum[i] += (_A.LongNum[i] / Base);  // если есть разряд для переноса, переносим его в следующий разряд
-		_B.LongNum[i] %= Base; // если есть разряд для переноса он отсекается
+		}
+		_B.LongNum[i] += (_A.LongNum[i] / Base); 
+		_B.LongNum[i] %= Base; 
 	}
 
 	if (_B.LongNum[length - 2] == 0)
@@ -145,36 +122,43 @@ BigNum BigNum::Sub(const BigNum& A, const BigNum& B)
 {
 	BigNum _A = A, _B = B, Res;
 	unsigned int size_a = _A.Size(), size_b = _B.Size(), length = size_a;
-	if (size_a < size_b) {
-		return Res; //TODO: make try {} catch block there
+	try
+	{
+		if (size_a < size_b) {
+			throw "Нельзя вычитать большее из меньшего!";
+		}
 	}
+	catch (const std::exception& e)
+	{
+		cout << e.what();
+	}	
 
-	else if (size_a == size_b) {
+	if (size_a == size_b) {
 		if (_A.LongNum[length - 1] < _B.LongNum[length - 1]) {
 			return Res;
 		}
 		else if (_A.LongNum[length - 1] == _B.LongNum[length - 1]) {
-			for (int ix = length-1; ix > 0; ix--) { // поразрядное сравнение весов чисел 
+			for (int ix = length-1; ix > 0; ix--) {
 				if (_A.LongNum[ix] > _B.LongNum[ix]) {
 					break;
 				}
-				if (_A.LongNum[ix] < _B.LongNum[ix]) {// если разряд первого числа больше
-					return Res; // выход 
+				if (_A.LongNum[ix] < _B.LongNum[ix]) {
+					return Res;
 				}
 			}
 		}
 	}
 
-	for (int ix = 0; ix < length; ix++) {// проход по всем разрядам числа, начиная с последнего, не доходя до первого
-		if (ix >= size_b) {
+	for (unsigned int i = 0; i < length; i++) {
+		if (i >= size_b) {
 			break;
 		}
 
-		_A.LongNum[ix] -= _B.LongNum[ix]; // вычитаем значение текущего разряда меньшего числа
+		_A.LongNum[i] -= _B.LongNum[i]; 
 
-		if (_A.LongNum[ix] / Base > 0) {// если значение в текущем разряде двухразрядное
-			_A.LongNum[ix + 1]++; // переносим единицу в старший разряд
-			_A.LongNum[ix] %= Base; // в текущем разряде отсекаем ее
+		if (_A.LongNum[i] / Base > 0) {
+			_A.LongNum[i + 1]++; 
+			_A.LongNum[i] %= Base; 
 		}
 	}
 
@@ -289,7 +273,7 @@ BigNum & BigNum::Pow(const unsigned int Times) {
 	return *this;
 }
 
-BigNum & BigNum::FastPow(BigNum & Num, BigNum & Deg, BigNum & Mod) {
+BigNum BigNum::FastPow(BigNum & Num, BigNum & Deg, BigNum & Mod) {
 	
 	BigNum _Num = Num;
 	//1:
@@ -474,4 +458,3 @@ BigNum operator/(const BigNum & A, const BigNum & B) {
 		return BigNum("0");
 	}
 }
-

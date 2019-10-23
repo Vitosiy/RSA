@@ -12,11 +12,8 @@ class BigNum {
 public:
 	BigNum();
 	BigNum(unsigned int x);
-	void PrintF(const std::ofstream& Filename);
-
-
-	BigNum( unsigned int BlockSize, const unsigned int Offset, const std::ifstream& Filename);
 	BigNum(const std::string& Str);
+	
 	static BigNum Add(const BigNum& A, const BigNum& B);
 	static BigNum Sub(const BigNum& A, const BigNum& B);
 	static void Mul(const BigNum& A, const BigNum& B, BigNum& Res);
@@ -36,14 +33,13 @@ public:
 	friend BigNum operator % (const BigNum&, const BigNum&); 
 	friend BigNum operator / (const BigNum&, const BigNum&); 
 
-	std::string ToBin();
+	string ToBin();
 	BigNum& Pow(const unsigned int Times); 
-	static BigNum& FastPow(BigNum& Num, BigNum& Deg, BigNum& Mod);
+	static BigNum FastPow(BigNum& Num, BigNum& Deg, BigNum& Mod);
 	unsigned int Size();
 	void Print(bool flag);
-
-
-
+	void PrintF(std::ofstream& Filename);
+	   	 
 private:
 	void PrintP(bool flag);
 	std::vector<unsigned int> LongNum;
