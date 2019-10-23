@@ -17,7 +17,7 @@ public:
 	static BigNum Add(const BigNum& A, const BigNum& B);
 	static BigNum Sub(const BigNum& A, const BigNum& B);
 	static void Mul(const BigNum& A, const BigNum& B, BigNum& Res);
-	static void Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivision, BigNum& Reminder, bool& MistakeWasMade); //TODO
+	static void Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivision, BigNum& Reminder, bool& MistakeWasMade, bool& flag);
 	
 	friend bool operator == (const BigNum&, const BigNum&);
 	friend bool operator < (const BigNum&, const BigNum&);

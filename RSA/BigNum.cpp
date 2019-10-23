@@ -202,19 +202,11 @@ void BigNum::Mul(const BigNum & A, const BigNum & B, BigNum & Res) {
 }
 
 
-void BigNum::decrement()
-{
-	LongNum.erase(LongNum.begin(), find_if(LongNum.begin(), LongNum.end(), [](bit n) // поиск и удаление незначащих 0
-		{
-			return n.get_digit() > 0;
-		}));
 
-}
-
-void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivision, BigNum& Reminder, bool& MistakeWasMade) {
+void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivision, BigNum& Reminder, bool& MistakeWasMade, bool& flag) {
 	
-	BigNum _A = A, _B = B, result, buffer, del;
-	unsigned int length = _B.Size(), multiply = 0;
+	BigNum _A = A, _B = B, result, buffer, del, multiply;
+	unsigned int length = _B.Size();
 	BigNum One(1);
 	//unsigned int ResDiv=0;
 	BigNum Tmp(0);
@@ -261,13 +253,20 @@ void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivisi
 		}
 		if (buffer < _B) buffer.LongNum.push_back(_A.LongNum[length++]);
 
-		buffer.decrement(); // удаление незначащих нулей
 
-		multiply = 0; del = 0;
-		while (del < buffer) { multiply++; del = _B * multiply; }
-		while (del > buffer) { --multiply; del = _B * multiply; }
+		reverse(buffer.LongNum.begin(), buffer.LongNum.end());
+		while (buffer.LongNum.back() == 0) {
+			buffer.LongNum.pop_back();
+		};
+		reverse(buffer.LongNum.begin(), buffer.LongNum.end());
 
-		result.LongNum.push_back(multiply);
+		
+
+		//multiply = 0; del = 0;
+		while (del < buffer) { multiply.LongNum[0]++; del = _B * multiply; }
+		while (del > buffer) { --multiply.LongNum[0]; del = _B * multiply; }
+
+		result.LongNum.push_back(multiply.LongNum[0]);
 
 		buffer = buffer - _B * multiply;
 		for (int i = 0; i < length; ++i)
@@ -281,9 +280,12 @@ void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivisi
 		buffer.LongNum.clear();
 	}
 
-	IntegerResultOfDivision = result;
-	Reminder = (_A - (_B * result));
-	
+	if (flag == 1) {
+		IntegerResultOfDivision = result;
+	}
+	else {
+		Reminder = (_A - (_B * result));
+	}
 }
 
 BigNum & BigNum::operator=(const BigNum & A) {
@@ -477,10 +479,10 @@ BigNum operator*(const BigNum & A, const BigNum & B) {
 
 BigNum operator%(const BigNum & A, const BigNum & B) {
 	BigNum IntDivRes(0), Rem(0);
-	bool Flag=false;
-	BigNum::Div(A, B, IntDivRes, Rem, Flag);
+	bool Mistake =false, flag = 0;
+	BigNum::Div(A, B, IntDivRes, Rem, Mistake, flag);
 
-	if (!Flag) {
+	if (!Mistake) {
 		return Rem;
 	}
 	else {
@@ -491,10 +493,10 @@ BigNum operator%(const BigNum & A, const BigNum & B) {
 
 BigNum operator/(const BigNum & A, const BigNum & B) {
 	BigNum IntDivRes(0), Rem(0);
-	bool Flag=false;
-	BigNum::Div(A, B, IntDivRes, Rem, Flag);
+	bool Mistake =false, flag = 1;
+	BigNum::Div(A, B, IntDivRes, Rem, Mistake, flag);
 
-	if (!Flag) {
+	if (!Mistake) {
 		return IntDivRes;
 	}
 	else {
