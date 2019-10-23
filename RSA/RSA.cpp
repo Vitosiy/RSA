@@ -41,53 +41,58 @@ void RSA::encode(const std::string& pathToInputText, const std::string& pathToPu
 		BigNum phi = (p - BigNum("1")) * (q - BigNum("1"));
 		calculateE();
 		d = calculateD(e, phi);
-		std::ofstream eFile("publicKey.txt"), dFile("privateKey.txt");
+		std::ofstream eFile("publicKey.txt", std::ios::app), dFile("privateKey.txt", std::ios::app);
 		e.PrintF(eFile);
 		n.PrintF(eFile);
-		d.PrintF(eFile);
-		n.PrintF(eFile);
+		d.PrintF(dFile);
+		n.PrintF(dFile);
 		eFile.close();
 		dFile.close();
 	}
 	else {
-		std::ifstream eFile(pathToPublicKey);
+		std::ifstream eFile(pathToPublicKey, std::ios::in);
 		std::string eStr, nStr;
 		eFile >> eStr >> nStr;
 		n = nStr;
 		e = eStr;
 		eFile.close();
 	}
-	std::ofstream fileOutputText("outputEncode.txt");
-	char ch;
-	std::ifstream fileText(pathToInputText);
+	std::ofstream fileOutputText("outputEncode.txt", std::ios::app);
+	std::ifstream fileText(pathToInputText, std::ios::binary | std::ios::in);
 	if (!fileText) {
 		std::cout << "Wrong path to text" << std::endl;
 		return;
 	}
 	unsigned int BlockSize = 80;
-	BigNum Block(BlockSize, 0, fileText);
-	while () {
+	char* tmp = new char[BlockSize];
+	while (!fileText.eof()) {
+		fileText.read(tmp, BlockSize);
+		BigNum Block(tmp);
 		BigNum res = BigNum::FastPow(Block,e,n);
 		res.PrintF(fileOutputText);
 	}
 	fileText.close();
 	fileOutputText.close();
+	delete[] tmp;
 }
 
 void RSA::decode(const std::string& pathToText, const std::string& pathToPrivateKey) {
 	std::string nStr, dStr;
-	std::ifstream dFile(pathToPrivateKey), fileText(pathToText);
+	std::ifstream dFile(pathToPrivateKey, std::ios::in), fileText(pathToText, std::ios::binary | std::ios::in);
 	unsigned int BlockSize = 80;
+	char* tmp = new char[BlockSize];
 	dFile >> dStr >> nStr;
 	dFile.close();
 	n = nStr;
 	d = dStr;
 	std::ofstream fileOutputText("outputDecode.txt", std::ios::app);
-	BigNum Block(BlockSize, 0, fileText);
-	while () {
-		BigNum res = (BigNum::FastPow(Block,d, n));
+	while (!fileText.eof()) {
+		fileText.read(tmp, BlockSize);
+		BigNum Block(tmp);
+		BigNum res = (BigNum::FastPow(Block, d, n));
 		res.PrintF(fileOutputText);
 	}
 	fileText.close();
 	fileOutputText.close();
+	delete[] tmp;
 }

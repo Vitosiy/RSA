@@ -12,10 +12,10 @@ class BigNum {
 public:
 	BigNum();
 	BigNum(unsigned int x);
-	void PrintF(const std::string& Filename);
+	void PrintF(const std::ofstream& Filename);
 
 
-	BigNum( unsigned int BlockSize, const unsigned int Offset, const std::string& Filename);
+	BigNum( unsigned int BlockSize, const unsigned int Offset, const std::ifstream& Filename);
 	BigNum(const std::string& Str);
 	static BigNum Add(const BigNum& A, const BigNum& B);
 	static BigNum Sub(const BigNum& A, const BigNum& B);

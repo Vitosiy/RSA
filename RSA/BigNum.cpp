@@ -12,7 +12,7 @@ BigNum::BigNum(unsigned int x)
 };
 
 
-BigNum::BigNum(unsigned int BlockSize, const unsigned int Offset, const std::string& Filename) {
+/*BigNum::BigNum(unsigned int BlockSize, const unsigned int Offset, const std::string& Filename) {
 	this->Sing = 0;
 	std::fstream fstr(Filename, std::ios::binary | std::ios::in);
 	if (!fstr.is_open()) {
@@ -29,7 +29,7 @@ BigNum::BigNum(unsigned int BlockSize, const unsigned int Offset, const std::str
 		std::fill(std::begin(Tmp), std::begin(Tmp) + 4, NULL);
 	}
 	this->NumCreated = 1;
-}
+}*/
 
 BigNum::BigNum(const std::string& Str) {
 	std::string SubStr;
@@ -90,9 +90,9 @@ void BigNum::PrintP(bool flag) {
 	}
 }
 
-void BigNum::PrintF(const std::string& Filename)
+void BigNum::PrintF(const std::string& string)
 {
-	std::fstream filename(Filename, std::ios::binary | std::ios::out);
+	std::fstream filename(Filename,std::ios::app);
 	if (!filename.is_open()) {
 		this->NumCreated = 0;
 		return;
@@ -101,7 +101,7 @@ void BigNum::PrintF(const std::string& Filename)
 
 		filename << std::hex << (char)(*it >> 24) << (char)(*it >> 16) << (char)(*it >> 8) << (char)(*it);
 	}
-	std::cout << std::endl;
+	filename << std::endl;
 
 }
 
