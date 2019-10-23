@@ -19,15 +19,15 @@ void RSA::generatePQ(BigNum& _p, BigNum& _q, int bit) {
 void RSA::calculateE() {
 	long long ferm[] = { 3, 5, 17, 257, 65537, 4294967297 };
 	srand(time(NULL));
-	e = BigNum(ferm[rand() % 6]);
+	e = BigNum(ferm[rand() % 5]);
 }
 
 BigNum RSA::calculateD(BigNum& e, BigNum& phi) {
-	BigNum tmp;
+	BigNum tmp = phi;
 	BigNum d;
 	while (true) {
-		tmp = tmp + phi;
-		d = (tmp / e) + BigNum(1);
+		tmp = tmp + BigNum(1);
+		d = tmp / e;
 		if ((d * e) % phi == BigNum(1))
 			return d;
 	}

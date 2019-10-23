@@ -39,6 +39,7 @@ public:
 	unsigned int Size();
 	void Print(bool flag);
 	void PrintF(std::ofstream& Filename);
+	void decrement();
 	   	 
 private:
 	void PrintP(bool flag);

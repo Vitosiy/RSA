@@ -18,10 +18,11 @@ BigNum::BigNum(const std::string& Str) {
 	for (unsigned int i = 0; i < Str.size(); i = i + 4) {
 		if (i + 4 > Str.size()) {
 			SubStr = std::string(Str.begin() + i, Str.end());
-			if (Str.size() - (i + 4) == -3)
+			if (Str.size() - (i + 4) == -1)
 			{
 				std::reverse(LongNum.begin(), LongNum.end());
 				this->LongNum.push_back((int)((unsigned char)SubStr[0] << 24) | (int)((unsigned char)SubStr[1] << 16) | (int)((unsigned char)SubStr[2] << 8));
+				std::reverse(LongNum.begin(), LongNum.end());
 			}
 			if (Str.size() - (i + 4) == -2)
 			{
@@ -29,7 +30,7 @@ BigNum::BigNum(const std::string& Str) {
 				this->LongNum.push_back((int)((unsigned char)SubStr[0] << 24) | (int)((unsigned char)SubStr[1] << 16));
 				std::reverse(LongNum.begin(), LongNum.end());
 			}
-			if (Str.size() - (i + 4) == -1)
+			if (Str.size() - (i + 4) == -3)
 			{
 				std::reverse(LongNum.begin(), LongNum.end());
 				this->LongNum.push_back((int)((unsigned char)SubStr[0] << 24));
@@ -200,12 +201,22 @@ void BigNum::Mul(const BigNum & A, const BigNum & B, BigNum & Res) {
 	Res.LongNum = res;
 }
 
+
+void BigNum::decrement()
+{
+	LongNum.erase(LongNum.begin(), find_if(LongNum.begin(), LongNum.end(), [](bit n) // поиск и удаление незначащих 0
+		{
+			return n.get_digit() > 0;
+		}));
+
+}
+
 void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivision, BigNum& Reminder, bool& MistakeWasMade) {
 	
-	BigNum _A = A, _B = B;
-	unsigned int length = _A.Size();
+	BigNum _A = A, _B = B, result, buffer, del;
+	unsigned int length = _B.Size(), multiply = 0;
 	BigNum One(1);
-	BigNum ResDiv(1);
+	//unsigned int ResDiv=0;
 	BigNum Tmp(0);
 
 	if ((_A.Size() == 0) | (_B.Size() == 0)) {
@@ -223,7 +234,7 @@ void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivisi
 		return;
 	}
 
-	for (unsigned int i = 0; i < (length-1); i++)
+	/*for (unsigned int i = 0; i < (length-1); i++)
 	{
 		if (i >= _B.Size())
 			break;
@@ -233,13 +244,45 @@ void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivisi
 		}
 	}
 
-	if (ResDiv.LongNum[0] > 1) {
+	if(ResDiv.LongNum[0] > 1) {
 		ResDiv.LongNum[0]--;
 	}
 
 
 	IntegerResultOfDivision = ResDiv;
-	Reminder = (_A - (_B * ResDiv));
+	Reminder = (_A - (_B * ResDiv));*/
+
+	while (_A > _B)
+	{
+		length = _B.LongNum.size();
+		for (int i = 0; i < length; ++i)
+		{
+			buffer.LongNum.push_back(_A.LongNum[i]);
+		}
+		if (buffer < _B) buffer.LongNum.push_back(_A.LongNum[length++]);
+
+		buffer.decrement(); // удаление незначащих нулей
+
+		multiply = 0; del = 0;
+		while (del < buffer) { multiply++; del = _B * multiply; }
+		while (del > buffer) { --multiply; del = _B * multiply; }
+
+		result.LongNum.push_back(multiply);
+
+		buffer = buffer - _B * multiply;
+		for (int i = 0; i < length; ++i)
+		{
+			_A.LongNum.erase(_A.LongNum.begin());
+		}
+
+		_A.LongNum.insert(_A.LongNum.begin(), buffer.LongNum.begin(), buffer.LongNum.end());
+		if (buffer == 0 && _A.LongNum.front() == 0) result.LongNum.push_back(0);
+		if (buffer == 0 && _A >= 1) result.LongNum.push_back(0);
+		buffer.LongNum.clear();
+	}
+
+	IntegerResultOfDivision = result;
+	Reminder = (_A - (_B * result));
 	
 }
 
