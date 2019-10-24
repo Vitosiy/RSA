@@ -24,11 +24,11 @@ void RSA::calculateE() {
 
 BigNum RSA::calculateD(BigNum& e, BigNum& phi) {
 	BigNum tmp = phi;
-	BigNum d;
+	BigNum d, One(1);
 	while (true) {
 		tmp = tmp + BigNum(1);
 		d = tmp / e;
-		if ((d * e) % phi == BigNum(1))
+		if (((d * e) % phi) == One)
 			return d;
 	}
 }

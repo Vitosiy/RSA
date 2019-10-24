@@ -39,7 +39,6 @@ public:
 	unsigned int Size();
 	void Print(bool flag);
 	void PrintF(std::ofstream& Filename);
-	void decrement();
 	   	 
 private:
 	void PrintP(bool flag);
@@ -47,5 +46,4 @@ private:
 	bool Sing : 1;
 	bool NumCreated : 1;
 	static const unsigned int Base = 0xFFFFFFFF;
-	//vector<unsigned int> LongNum;
 };
