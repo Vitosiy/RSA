@@ -205,11 +205,11 @@ void BigNum::Mul(const BigNum & A, const BigNum & B, BigNum & Res) {
 
 void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivision, BigNum& Reminder, bool& MistakeWasMade, bool& flag) {
 	
-	BigNum _A = A, _B = B, result, buffer, del, multiply;
-	unsigned int length = _B.Size();
+	BigNum _A = A, _B = B;
+	unsigned int size_a = _A.Size();
 	BigNum One(1);
-	//unsigned int ResDiv=0;
 	BigNum Tmp(0);
+	//BigNum  result, buffer, del, multiply;
 
 	if ((_A.Size() == 0) | (_B.Size() == 0)) {
 		MistakeWasMade = true;
@@ -244,7 +244,7 @@ void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivisi
 	IntegerResultOfDivision = ResDiv;
 	Reminder = (_A - (_B * ResDiv));*/
 
-	while (_A > _B)
+	/*while (_A > _B)
 	{
 		length = _B.LongNum.size();
 		for (int i = 0; i < length; ++i)
@@ -262,7 +262,6 @@ void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivisi
 
 		
 
-		//multiply = 0; del = 0;
 		while (del < buffer) { multiply.LongNum[0]++; del = _B * multiply; }
 		while (del > buffer) { --multiply.LongNum[0]; del = _B * multiply; }
 
@@ -285,7 +284,59 @@ void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivisi
 	}
 	else {
 		Reminder = (_A - (_B * result));
+	}*/
+
+	BigNum res;
+	while (res.Size() != size_a)
+		res.LongNum.push_back(0);
+	BigNum curValue(1);
+	for (int i = (size_a - 1); i >= 0; i--)
+	{
+		//curValue.LevelUp(); // * osn
+		curValue = curValue * Base;
+		if (i == (size_a - 1)) {
+			unsigned int amount = curValue.Size() - 1;
+			if (curValue.LongNum[amount] == 1) {
+				while (curValue.LongNum.back() == 1) {
+					curValue.LongNum.pop_back();
+				};
+			}
+		}
+		curValue.LongNum[0] = _A.LongNum[i];
+		// подбираем максимальное число x, такое что B * x <= curValue
+		unsigned int x = 0;
+		unsigned int l = 0, r = Base;
+		while (l <= r)
+		{
+			unsigned int m = (l + r) >> 1;
+			BigNum cur = _B * m;
+			if (cur <= curValue)
+			{
+				x = m;
+				l = m + 1;
+			}
+			else
+				r = m - 1;
+		}
+		res.LongNum[i] = x;
+		curValue = curValue - _B * x;
 	}
+	// избавляемся от лидирующих нулей
+	reverse(res.LongNum.begin(), res.LongNum.end());
+	while (res.LongNum.back() == 0) {
+		res.LongNum.pop_back();
+	};
+	reverse(res.LongNum.begin(), res.LongNum.end());
+
+	/*int pos = A.LongNum.size();
+	while (pos >= 0 && !res.LongNum[pos])
+		pos--;
+	res.LongNum.size() = pos + 1;*/
+
+	if (flag == 1)
+		IntegerResultOfDivision = res;
+	else
+		Reminder = curValue;
 }
 
 BigNum & BigNum::operator=(const BigNum & A) {
