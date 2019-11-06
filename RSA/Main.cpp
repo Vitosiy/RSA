@@ -1,8 +1,8 @@
 #include "RSA.h"
 
-BigNum RSA::e = 0;
-BigNum RSA::d = 0;
-BigNum RSA::n = 0;
+BigNum RSA::e(0);
+BigNum RSA::d(0);
+BigNum RSA::n(0);
 
 int main() {
 	setlocale(LC_ALL, "Rus");

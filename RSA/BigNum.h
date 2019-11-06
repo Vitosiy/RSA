@@ -36,6 +36,8 @@ public:
 	string ToBin();
 	BigNum& Pow(const unsigned int Times); 
 	static BigNum FastPow(BigNum& Num, BigNum& Deg, BigNum& Mod);
+	static BigNum Evk(const BigNum& A, const BigNum& B);
+
 	unsigned int Size();
 	void Print(bool flag);
 	void PrintF(std::ofstream& Filename);
@@ -45,5 +47,4 @@ private:
 	std::vector<unsigned int> LongNum;
 	bool Sing : 1;
 	bool NumCreated : 1;
-	static const unsigned int Base = 0xFFFFFFFF;
 };

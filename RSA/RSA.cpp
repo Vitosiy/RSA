@@ -1,6 +1,6 @@
 #include "RSA.h"
 
-
+#define BlockSize 80
 
 void RSA::generatePQ(BigNum& _p, BigNum& _q, int bit) {
 	mpz_t p,q;
@@ -25,12 +25,9 @@ void RSA::calculateE() {
 BigNum RSA::calculateD(BigNum& e, BigNum& phi) {
 	BigNum tmp = phi;
 	BigNum d, One(1);
-	while (true) {
-		tmp = tmp + BigNum(1);
-		d = tmp / e;
-		if (((d * e) % phi) == One)
-			return d;
-	}
+	d = BigNum::Evk(e,phi);
+	if (((d * e) % phi) == 1) return d;
+	else return 0;
 }
 
 void RSA::encode(const std::string& pathToInputText, const std::string& pathToPublicKey, const unsigned int mode) {
@@ -63,7 +60,6 @@ void RSA::encode(const std::string& pathToInputText, const std::string& pathToPu
 		eFile.close();
 	}
 	std::ofstream fileOutputText("outputEncode.txt", std::ios::app);
-	unsigned int BlockSize = 80;
 	char* tmp = new char[BlockSize];
 	while (!fileText.eof()) {
 		fileText.read(tmp, BlockSize);
@@ -79,7 +75,6 @@ void RSA::encode(const std::string& pathToInputText, const std::string& pathToPu
 void RSA::decode(const std::string& pathToText, const std::string& pathToPrivateKey) {
 	std::string nStr, dStr;
 	std::ifstream dFile(pathToPrivateKey, std::ios::in), fileText(pathToText, std::ios::binary | std::ios::in);
-	unsigned int BlockSize = 80;
 	char* tmp = new char[BlockSize];
 	dFile >> dStr >> nStr;
 	dFile.close();
