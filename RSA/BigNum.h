@@ -24,6 +24,7 @@ public:
 	friend bool operator > (const BigNum& lhs, const BigNum& rhs);
 	friend bool operator <= (const BigNum& lhs, const BigNum& rhs);
 	friend bool operator >= (const BigNum& lhs, const BigNum& rhs);
+	friend bool operator!=(const BigNum&, const BigNum&);
 
 	BigNum& operator = (const BigNum&);
 	friend BigNum operator + (const BigNum&, const BigNum&);
@@ -36,7 +37,7 @@ public:
 	string ToBin();
 	BigNum& Pow(const unsigned int Times); 
 	static BigNum FastPow(BigNum& Num, BigNum& Deg, BigNum& Mod);
-	static BigNum Evk(const BigNum& A, const BigNum& B);
+	static BigNum Evk(const BigNum& a, const BigNum& b, BigNum& x, BigNum& y);
 
 	unsigned int Size();
 	void Print(bool flag);

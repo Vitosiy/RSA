@@ -1,6 +1,7 @@
 #include "RSA.h"
 
-#define BlockSize 80
+#define BlockSize 76
+#define p_q_size 128
 
 void RSA::generatePQ(BigNum& _p, BigNum& _q, int bit) {
 	mpz_t p,q;
@@ -22,12 +23,26 @@ void RSA::calculateE() {
 	e = BigNum(ferm[rand() % 5]);
 }
 
-BigNum RSA::calculateD(BigNum& e, BigNum& phi) {
-	BigNum tmp = phi;
+BigNum RSA::calculateD(BigNum& e, BigNum& phi, BigNum& p, BigNum& q) {
+	/*BigNum tmp = phi;
 	BigNum d, One(1);
 	d = BigNum::Evk(e,phi);
 	if (((d * e) % phi) == 1) return d;
-	else return 0;
+	else return 0;*/
+	BigNum d, y;
+	BigNum g = BigNum::Evk(e, phi, d, y);
+	while (!(g == 1)) {
+		generatePQ(p, q, p_q_size);
+		n = p * q;
+		BigNum phi = (p - BigNum(1)) * (q - BigNum(1));
+		calculateE();
+		BigNum g = BigNum::Evk(e, phi, d, y);
+	};
+
+	d = (d % phi + phi) % phi;
+	BigNum tmp = (d * e)%phi;
+	if(tmp == 1)
+	return d;
 }
 
 void RSA::encode(const std::string& pathToInputText, const std::string& pathToPublicKey, const unsigned int mode) {
@@ -38,11 +53,11 @@ void RSA::encode(const std::string& pathToInputText, const std::string& pathToPu
 	}
 	if (mode == 0) {
 		BigNum p, q;
-		generatePQ(p, q, 512);
+		generatePQ(p, q, p_q_size);
 		n = p * q;
 		BigNum phi = (p - BigNum(1)) * (q - BigNum(1));
 		calculateE();
-		d = calculateD(e, phi);
+		d = calculateD(e, phi, p, q);
 		std::ofstream eFile("publicKey.txt", std::ios::app), dFile("privateKey.txt", std::ios::app);
 		e.PrintF(eFile);
 		n.PrintF(eFile);

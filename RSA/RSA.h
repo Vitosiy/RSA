@@ -16,7 +16,7 @@ private:
 	static BigNum d; // private key
 	static BigNum n; // mod
 	static void generatePQ(BigNum&, BigNum&, int);
-	static BigNum calculateD(BigNum&, BigNum&);
+	static BigNum calculateD(BigNum&, BigNum&, BigNum& p, BigNum& q);
 	static void calculateE();
 public:
 	RSA() = delete;
