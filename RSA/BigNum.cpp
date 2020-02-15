@@ -90,98 +90,119 @@ unsigned int BigNum::Size()
 
 BigNum BigNum::Add(const BigNum& A, const BigNum& B)
 {
-	BigNum _A = A, _B = B, One(1);
+	BigNum _A = A, _B = B, One(1), result;
 	unsigned int size_a = _A.Size(), size_b = _B.Size(), length;
-	if (size_a > size_b) {
-		length = size_a;
-		size_a = size_b;
-		size_b = length;
-		_B = A;
-		_A = B;
-	}
-	else
-		length = size_b;
-	size_a = _A.Size();
-	for (int i = 0; i < length; i++)
-	{
-		if (i >= size_a)
-			break;
-		unsigned long long int tmp = _B.LongNum[i];
-		if (((tmp += _A.LongNum[i]) > UINT_MAX)) {
-			if ((i + 1) > (length - 1));
-			_B.LongNum.push_back(0);
+	if ((A.sign == false) & (B.sign == true)) { _B.sign == false; result = _A - _B; }
+	else if ((A.sign == true) & (B.sign == false)) { _A.sign = false; result = _B - _A; }
+	else {
+		if ((A.sign == true) & (B.sign == true)) { result.sign = true; };
+		if (size_b > size_a) {
 
-			_B.LongNum[i + 1] += One.LongNum[0];  // если есть разряд для переноса, переносим его в следующий разряд
-			_B.LongNum[i] = tmp; // если есть разряд для переноса он отсекается
+			length = size_b;
+			size_b = size_a;
+			size_a = length;
+			_A = B;
+			_B = A;
 		}
 		else
+			length = size_a;
+		size_b = _B.Size();
+		for (int i = 0; i < length; i++)
 		{
-			_B.LongNum[i] += _A.LongNum[i]; // суммируем последние разряды чисел
+			if (i >= size_b)
+				break;
+			unsigned long long int tmp = _A.LongNum[i];
+			if (((tmp += _B.LongNum[i]) > UINT_MAX)) {
+				if ((i + 1) > (length - 1));
+				_A.LongNum.push_back(0);
+
+				_A.LongNum[i + 1] += One.LongNum[0];  // если есть разряд для переноса, переносим его в следующий разряд
+				_A.LongNum[i] = tmp; // если есть разряд для переноса он отсекается
+			}
+			else
+			{
+				_A.LongNum[i] += _B.LongNum[i]; // суммируем последние разряды чисел
+			}
+
 		}
-
+		while ((_A.Size() > 1) and (_A.LongNum.back() == 0)) {
+			_A.LongNum.pop_back();
+		};
+		result = _A;
 	}
-	while ((_B.Size() > 1) and (_B.LongNum.back() == 0)) {
-		_B.LongNum.pop_back();
-	};
 
-	return _B;
+	return result;
 }
 
 BigNum BigNum::Sub(const BigNum& A, const BigNum& B)
 {
-	BigNum _A = A, _B = B;
+	BigNum _A = A, _B = B, result;
 	unsigned int size_a = _A.Size(), size_b = _B.Size(), length = size_a;
-	if (_A == _B) return _A = 0;
-	if (_A < _B) {
-		_A = B;
-		_B = A;
-		size_a = _A.Size();
-		size_b = _B.Size();
-		length = size_a;
-	}
-
-	/*else if (size_a == size_b) {
-		if (_A.LongNum[length - 1] < _B.LongNum[length - 1]) {
+	if ((A.sign == false) & (B.sign == true)) { _B.sign = false; result = _A + _B; }
+	else if ((A.sign == true) & (B.sign == false)) { _B.sign = true; result = _A + _B; }
+	else {
+		if (_A == _B) return _A = 0;
+		if ((A.sign == true) & (B.sign == true)) { 
 			_A = B;
 			_B = A;
 			size_a = _A.Size();
 			size_b = _B.Size();
 			length = size_a;
+			_A.sign = false;
+			_B.sign = false;
 		}
-		else if (_A.LongNum[length - 1] == _B.LongNum[length - 1]) {
-			for (int ix = length - 1; ix > 0; ix--) { // поразрядное сравнение весов чисел 
-				if (_A.LongNum[ix] > _B.LongNum[ix]) {
-					break;
-				}
-				if (_A.LongNum[ix] < _B.LongNum[ix]) {// если разряд первого числа больше
-					_A = B;
-					_B = A;
-					size_a = _A.Size();
-					size_b = _B.Size();
-					length = size_a;
-					break;
+		else if (_A < _B) {
+			_A = B;
+			_B = A;
+			size_a = _A.Size();
+			size_b = _B.Size();
+			length = size_a;
+			result.sign = true;
+		}
+		/*
+		else if (size_a == size_b) {
+			if (_A.LongNum[length - 1] < _B.LongNum[length - 1]) {
+				_A = B;
+				_B = A;
+				size_a = _A.Size();
+				size_b = _B.Size();
+				length = size_a;
+			}
+			else if (_A.LongNum[length - 1] == _B.LongNum[length - 1]) {
+				for (int ix = length - 1; ix > 0; ix--) { // поразрядное сравнение весов чисел
+					if (_A.LongNum[ix] > _B.LongNum[ix]) {
+						break;
+					}
+					if (_A.LongNum[ix] < _B.LongNum[ix]) {// если разряд первого числа больше
+						_A = B;
+						_B = A;
+						size_a = _A.Size();
+						size_b = _B.Size();
+						length = size_a;
+						break;
+					}
 				}
 			}
-		}
-	}*/
+		}*/
 
-	for (int ix = 0; ix < length; ix++) {// проход по всем разрядам числа, начиная с последнего, не доходя до первого
-		if (ix >= size_b) {
-			break;
-		}
+		for (int ix = 0; ix < length; ix++) {// проход по всем разрядам числа, начиная с последнего, не доходя до первого
+			if (ix >= size_b) {
+				break;
+			}
 
-		if (_A.LongNum[ix] < _B.LongNum[ix])
-		{
-			_A.LongNum[ix + 1]--; // переносим единицу в старший разряд
-			_A.LongNum[ix] -= _B.LongNum[ix];
+			if (_A.LongNum[ix] < _B.LongNum[ix])
+			{
+				_A.LongNum[ix + 1]--; // переносим единицу в старший разряд
+				_A.LongNum[ix] -= _B.LongNum[ix];
+			}
+			else _A.LongNum[ix] -= _B.LongNum[ix];
 		}
-		else _A.LongNum[ix] -= _B.LongNum[ix];
+		while ((_A.Size() > 1) and (_A.LongNum.back() == 0)) {
+			_A.LongNum.pop_back();
+		};
+		result = _A;
 	}
-	while ((_A.Size() > 1) and (_A.LongNum.back() == 0)) {
-		_A.LongNum.pop_back();
-	};
-
-	return _A;
+	return result;
 }
 
 void BigNum::Mul(const BigNum& A, const BigNum& B, BigNum& Res) {
@@ -191,9 +212,11 @@ void BigNum::Mul(const BigNum& A, const BigNum& B, BigNum& Res) {
 		return;
 	}
 
-	BigNum _A = A, _B = B;
+	BigNum _A = A, _B = B, result;
 	vector<unsigned int> res(A.LongNum.size() + B.LongNum.size());
 	unsigned long long cur;
+
+	if ((A.sign == true) & (B.sign == true)) { _A.sign = false; _B.sign = false; }
 	for (unsigned int i = 0; i < _A.LongNum.size(); i++) {
 		for (unsigned int j = 0, carryover = 0; j < _B.LongNum.size() || carryover; j++) {
 			if (j < _B.LongNum.size()) {
@@ -212,6 +235,8 @@ void BigNum::Mul(const BigNum& A, const BigNum& B, BigNum& Res) {
 	}
 
 	Res.LongNum = res;
+	if (((A.sign == false) & (B.sign == true)) | ((A.sign == true) & (B.sign == false))) { Res.sign = true; }
+
 }
 
 void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivision, BigNum& Reminder, bool& MistakeWasMade, bool& flag)
@@ -227,6 +252,7 @@ void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivisi
 		MistakeWasMade = true;
 		return;
 	}
+	if ((A.sign == true) & (B.sign == true)) { _A.sign = false; _B.sign = false;}
 	if (_A < _B) {
 		IntegerResultOfDivision = Zero;
 		Reminder = A;
@@ -292,6 +318,8 @@ void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivisi
 			//reverse(res.LongNum.begin(), res.LongNum.end());
 		}
 		IntegerResultOfDivision = res;
+		if (((A.sign == false) & (B.sign == true)) | ((A.sign == true) & (B.sign == false))) { IntegerResultOfDivision.sign = true; }
+
 	}
 	else
 	{
@@ -303,11 +331,14 @@ void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivisi
 			//reverse(curValue.LongNum.begin(), curValue.LongNum.end());
 		}
 		Reminder = curValue;
+		if (((A.sign == false) & (B.sign == true)) | ((A.sign == true) & (B.sign == false))) { Reminder.sign = true; }
+
 	}
 }
 
 BigNum & BigNum::operator=(const BigNum & A) {
 	this->LongNum = A.LongNum;
+	this->sign = A.sign;
 	return *this;
 }
 
@@ -395,6 +426,9 @@ bool operator!=(const BigNum& A, const BigNum& B) {
 	if (A.LongNum.size() != B.LongNum.size()) {
 		return true;
 	}
+	if (A.sign != B.sign) {
+		return true;
+	}
 
 	for (int i = A.LongNum.size(); i > 0; i--) {
 		if (A.LongNum[i - 1] != B.LongNum[i - 1]) {
@@ -410,6 +444,10 @@ bool operator==(const BigNum & A, const BigNum & B) {
 		return false;
 	}
 
+	if (A.sign != B.sign) {
+		return false;
+	}
+
 	for (int i = A.LongNum.size(); i > 0; i--) {
 		if (A.LongNum[i - 1] != B.LongNum[i - 1]) {
 			return false;
@@ -419,93 +457,214 @@ bool operator==(const BigNum & A, const BigNum & B) {
 	return true;
 }
 
-bool operator <(const BigNum & A, const BigNum& B) {
-	if (A.LongNum.size() < B.LongNum.size()) {
+bool operator<(const BigNum & A, const BigNum& B) {
+	if ((A.sign == false) & (B.sign == true)) {
+		return false;
+	}
+	if ((A.sign == true) & (B.sign == false)) {
 		return true;
 	}
-	else if (A.LongNum.size() > B.LongNum.size()) {
+	if ((A.sign == true) & (B.sign == true))
+	{
+		if (A.LongNum.size() > B.LongNum.size()) {
+			return true;
+		}
+		else if (A.LongNum.size() < B.LongNum.size()) {
+			return false;
+		}
+		else {
+			for (int i = A.LongNum.size() - 1; i >= 0; i--) {
+				if (A.LongNum[i] > B.LongNum[i]) {
+					return true;
+				}
+				else if (A.LongNum[i] == B.LongNum[i]) continue;
+				else return false;
+
+			}
+		}
 		return false;
 	}
 	else {
-		for (int i = A.LongNum.size() - 1; i >= 0; i--) {
-			if (A.LongNum[i] < B.LongNum[i]) {
-				return true;
-			}
-			else if (A.LongNum[i] == B.LongNum[i]) continue;
-			else return false;
 
+		if (A.LongNum.size() < B.LongNum.size()) {
+			return true;
 		}
-	}
+		else if (A.LongNum.size() > B.LongNum.size()) {
+			return false;
+		}
+		else {
+			for (int i = A.LongNum.size() - 1; i >= 0; i--) {
+				if (A.LongNum[i] < B.LongNum[i]) {
+					return true;
+				}
+				else if (A.LongNum[i] == B.LongNum[i]) continue;
+				else return false;
 
-	return false;
+			}
+		}
+
+		return false;
+	}
 }
 
 bool operator>(const BigNum & A, const BigNum & B) {
-	if (A.LongNum.size() > B.LongNum.size()) {
+	if ((A.sign == false) & (B.sign == true)) {
 		return true;
 	}
-	else if (A.LongNum.size() < B.LongNum.size()) {
+	if ((A.sign == true) & (B.sign == false)) {
+		return false;
+	}
+	if ((A.sign == true) & (B.sign == true))
+	{
+		if (A.LongNum.size() > B.LongNum.size()) {
+			return false;
+		}
+		else if (A.LongNum.size() < B.LongNum.size()) {
+			return true;
+		}
+		else {
+			for (int i = A.LongNum.size() - 1; i >= 0; i--) {
+				if (A.LongNum[i] < B.LongNum[i]) {
+					return true;
+				}
+				else if (A.LongNum[i] == B.LongNum[i]) continue;
+				else return false;
+
+			}
+		}
 		return false;
 	}
 	else {
-		for (int i = A.LongNum.size(); i > 0; i--) {
-			if (A.LongNum[i - 1] > B.LongNum[i - 1]) {
-				return true;
-			}
-			else if (A.LongNum[i - 1] == B.LongNum[i - 1]);
-			else return false;
-		}
-	}
 
-	return false;
+		if (A.LongNum.size() > B.LongNum.size()) {
+			return true;
+		}
+		else if (A.LongNum.size() < B.LongNum.size()) {
+			return false;
+		}
+		else {
+			for (int i = A.LongNum.size(); i > 0; i--) {
+				if (A.LongNum[i - 1] > B.LongNum[i - 1]) {
+					return true;
+				}
+				else if (A.LongNum[i - 1] == B.LongNum[i - 1]);
+				else return false;
+			}
+		}
+
+		return false;
+	}
 }
 
 bool operator<=(const BigNum & A, const BigNum & B) {
-	if (A.LongNum.size() < B.LongNum.size()) {
+	if ((A.sign == false) & (B.sign == true)) {
+		return false;
+	}
+	if ((A.sign == true) & (B.sign == false)) {
 		return true;
 	}
-	else if (A.LongNum.size() > B.LongNum.size()) {
+	if ((A.sign == true) & (B.sign == true))
+	{
+		if (A.LongNum.size() > B.LongNum.size()) {
+			return true;
+		}
+		else if (A.LongNum.size() < B.LongNum.size()) {
+			return false;
+		}
+		else {
+			for (int i = A.LongNum.size() - 1; i >= 0; i--) {
+				if (A.LongNum[i - 1] > B.LongNum[i - 1]) {
+					return true;
+				}
+				else if (A.LongNum[i - 1] == B.LongNum[i - 1]) {
+					continue;
+				}
+				else return false;
+
+			}
+			return true;
+		}
 		return false;
 	}
 	else {
-		for (int i = A.LongNum.size(); i > 0; i--) {
-			if (A.LongNum[i - 1] < B.LongNum[i - 1]) {
-				return true;
-			}
-			else if (A.LongNum[i - 1] == B.LongNum[i - 1]){
-				continue;
-			}
-			else {
-				return false;
-			}
+		if (A.LongNum.size() < B.LongNum.size()) {
+			return true;
 		}
+		else if (A.LongNum.size() > B.LongNum.size()) {
+			return false;
+		}
+		else {
+			for (int i = A.LongNum.size(); i > 0; i--) {
+				if (A.LongNum[i - 1] < B.LongNum[i - 1]) {
+					return true;
+				}
+				else if (A.LongNum[i - 1] == B.LongNum[i - 1]) {
+					continue;
+				}
+				else {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
 	}
-
-	return false;
 }
 
 bool operator>=(const BigNum & A, const BigNum & B) {
-	if (A.LongNum.size() < B.LongNum.size()) {
-		return false;
-	}
-	else if (A.LongNum.size() > B.LongNum.size()) {
+	if ((A.sign == false) & (B.sign == true)) {
 		return true;
 	}
-	else {
-		for (int i = A.LongNum.size(); i > 0; i--) {
-			if (A.LongNum[i - 1] > B.LongNum[i - 1]) {
-				return true;
-			}
-			else if (A.LongNum[i - 1] == B.LongNum[i - 1]) {
-				continue;
-			}
-			else {
-				return false;
-			}
-		}
+	if ((A.sign == true) & (B.sign == false)) {
+		return false;
 	}
+	if ((A.sign == true) & (B.sign == true))
+	{
+		if (A.LongNum.size() > B.LongNum.size()) {
+			return false;
+		}
+		else if (A.LongNum.size() < B.LongNum.size()) {
+			return true;
+		}
+		else {
+			for (int i = A.LongNum.size() - 1; i >= 0; i--) {
+				if (A.LongNum[i - 1] < B.LongNum[i - 1]) {
+					return true;
+				}
+				else if (A.LongNum[i - 1] == B.LongNum[i - 1]) {
+					continue;
+				}
+				else return false;
 
-	return false;
+			}
+			return true;
+		}
+		return false;
+	}
+	else {
+
+		if (A.LongNum.size() < B.LongNum.size()) {
+			return false;
+		}
+		else if (A.LongNum.size() > B.LongNum.size()) {
+			return true;
+		}
+		else {
+			for (int i = A.LongNum.size(); i > 0; i--) {
+				if (A.LongNum[i - 1] > B.LongNum[i - 1]) {
+					return true;
+				}
+				else if (A.LongNum[i - 1] == B.LongNum[i - 1]) {
+					continue;
+				}
+				else {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
 }
 
 BigNum operator+(const BigNum & A, const BigNum & B) {

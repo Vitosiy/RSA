@@ -48,4 +48,5 @@ private:
 	std::vector<unsigned int> LongNum;
 	bool Sing : 1;
 	bool NumCreated : 1;
+	bool sign = false;
 };

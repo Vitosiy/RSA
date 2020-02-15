@@ -40,8 +40,8 @@ BigNum RSA::calculateD(BigNum& e, BigNum& phi, BigNum& p, BigNum& q) {
 	};
 
 	d = (d % phi + phi) % phi;
-	BigNum tmp = (d * e)%phi;
-	if(tmp == 1)
+	//BigNum tmp = (d * e)%phi;
+	//if(tmp == 1)
 	return d;
 }
 
