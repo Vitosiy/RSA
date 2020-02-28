@@ -45,6 +45,9 @@ BigNum RSA::calculateD(BigNum& e, BigNum& phi, BigNum& p, BigNum& q) {
 	return d;
 }
 
+//--------------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------//
+
 void RSA::encode(const std::string& pathToInputText, const std::string& pathToPublicKey, const unsigned int mode) {
 	std::ifstream fileText(pathToInputText, std::ios::binary | std::ios::in);
 	if (!fileText) {
@@ -58,7 +61,7 @@ void RSA::encode(const std::string& pathToInputText, const std::string& pathToPu
 		BigNum phi = (p - BigNum(1)) * (q - BigNum(1));
 		calculateE();
 		d = calculateD(e, phi, p, q);
-		std::ofstream eFile("publicKey.txt", std::ios::app), dFile("privateKey.txt", std::ios::app);
+		std::ofstream eFile("publicKey.txt", std::ios::out), dFile("privateKey.txt", std::ios::out);
 		e.PrintF(eFile);
 		n.PrintF(eFile);
 		d.PrintF(dFile);
@@ -74,7 +77,7 @@ void RSA::encode(const std::string& pathToInputText, const std::string& pathToPu
 		e = eStr;
 		eFile.close();
 	}
-	std::ofstream fileOutputText("outputEncode.txt", std::ios::app);
+	std::ofstream fileOutputText("outputEncode.txt", std::ios::out);
 	char* tmp = new char[BlockSize];
 	while (!fileText.eof()) {
 		fileText.read(tmp, BlockSize);
@@ -87,15 +90,26 @@ void RSA::encode(const std::string& pathToInputText, const std::string& pathToPu
 	delete[] tmp;
 }
 
+//--------------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------//
+
 void RSA::decode(const std::string& pathToText, const std::string& pathToPrivateKey) {
-	std::string nStr, dStr;
-	std::ifstream dFile(pathToPrivateKey, std::ios::in), fileText(pathToText, std::ios::binary | std::ios::in);
-	char* tmp = new char[BlockSize];
-	dFile >> dStr >> nStr;
+	//string nStr, dStr;
+	//std::ifstream dFile(pathToPrivateKey, std::ios::in), fileText(pathToText, std::ios::binary | std::ios::in);
+	std::ifstream dFile("privateKey.txt", std::ios::binary | std::ios::in), fileText("outputEncode.txt", std::ios::binary | std::ios::in);
+
+	char* tmp = new char[BlockSize]; 
+	char* dStr = new char[BlockSize];
+	char* nStr = new char[BlockSize];
+	dFile.read(dStr, BlockSize);
+	dFile.read(nStr, BlockSize);
+
+
+
 	dFile.close();
-	n = nStr;
-	d = dStr;
-	std::ofstream fileOutputText("outputDecode.txt", std::ios::app);
+	BigNum n(nStr);
+	BigNum d(dStr);
+	std::ofstream fileOutputText("outputDecode.txt", std::ios::out);
 	while (!fileText.eof()) {
 		fileText.read(tmp, BlockSize);
 		BigNum Block(tmp);

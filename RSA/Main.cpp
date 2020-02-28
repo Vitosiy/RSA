@@ -33,10 +33,10 @@ int main() {
 				exit(0);
 			}
 		case 2:
-			std::cout << "Enter path to text: ";
+			/*std::cout << "Enter path to text: ";
 			std::cin >> pathToText;
 			std::cout << "Enter path to priv key: ";
-			std::cin >> pathToPrivateKey;
+			std::cin >> pathToPrivateKey;*/
 			RSA::decode(pathToText, pathToPrivateKey);
 			exit(0);
 		}

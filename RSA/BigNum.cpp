@@ -11,7 +11,6 @@ BigNum::BigNum(unsigned int x)
 	this->LongNum.push_back(x);
 };
 
-
 BigNum::BigNum(const std::string& Str) {
 	std::string SubStr;
 
@@ -49,6 +48,8 @@ BigNum::BigNum(const std::string& Str) {
 	this->Sing = 0;
 }
 
+//--------------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------//
 
 void BigNum::Print(bool flag) {
 
@@ -82,11 +83,13 @@ void BigNum::PrintF(ofstream& filename)
 
 }
 
-
 unsigned int BigNum::Size()
 {
 	return this->LongNum.size();
 };
+
+//--------------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------//
 
 BigNum BigNum::Add(const BigNum& A, const BigNum& B)
 {
@@ -273,9 +276,9 @@ void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivisi
 	//else size = (size_a - 2);
 	for (int i = size; i >= 0; i--)
 	{
-		while (tmp_A <= _B) {
+		while ((tmp_A <= _B) and (i > 0)) {
 			reverse(tmp_A.LongNum.begin(), tmp_A.LongNum.end());
-			tmp_A.LongNum.push_back(_A.LongNum[i]);
+			tmp_A.LongNum.push_back(_A.LongNum[i-1]);
 			reverse(tmp_A.LongNum.begin(), tmp_A.LongNum.end());
 			while ((tmp_A.Size() > 1) and (tmp_A.LongNum.back() == 0)) {
 				tmp_A.LongNum.pop_back();
@@ -306,7 +309,7 @@ void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivisi
 			res.LongNum[i] = res_t;
 		};
 	}
-	BigNum curValue = _A - _B * res;
+	BigNum curValue = tmp_A;
 
 	if (flag == 1) {
 		// избавляемся от лидирующих нулей
@@ -336,11 +339,8 @@ void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivisi
 	}
 }
 
-BigNum & BigNum::operator=(const BigNum & A) {
-	this->LongNum = A.LongNum;
-	this->sign = A.sign;
-	return *this;
-}
+//--------------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------//
 
 std::string BigNum::ToBin() {
 	std::string res;
@@ -369,35 +369,34 @@ BigNum & BigNum::Pow(const unsigned int Times) {
 
 BigNum BigNum::FastPow(BigNum & Num, BigNum & Deg, BigNum & Mod) {
 	
-	BigNum _Num = Num;
+	BigNum _Num = Num, _Mod = Mod;
 	//1:
 	std::string deg = Deg.ToBin();
 
 	//2:
-	unsigned int n = deg.size();
+	unsigned int n = (deg.size()-1);
 
 	//3:
 	vector<BigNum> Mass(n);
 	BigNum cur;
-	Mass[0] = Num % Mod;
+	Mass[0] = _Num % _Mod;
 	BigNum IntDivRes(0), Rem(0);
 	bool Flag = false;
 	for (unsigned int i = 1; i < n; i++) {
 		cur = Mass[i - 1] * Mass[i - 1];
-		Mass[i] = cur % Mod;
+		Mass[i] = cur % _Mod;
 	}
 
 	//4:
 	BigNum ResRes(1);
 	for (unsigned int i = 0; i < n; i++) {
-		ResRes = ResRes * Mass[i].Pow(deg[n - i]);
+		ResRes = ResRes * Mass[i].Pow(deg[n - i] - 48);
 	}
-	BigNum result = ResRes % Mod;
+	BigNum result = ResRes % _Mod;
 
 	//5:
 	return result;
 }
-
 
 BigNum BigNum::Evk(const BigNum& a, const BigNum& b, BigNum& x, BigNum& y) {
 	BigNum _A = a, _B = b, Zero;
@@ -421,6 +420,8 @@ BigNum BigNum::Evk(const BigNum& a, const BigNum& b, BigNum& x, BigNum& y) {
 	return gcd;
 }
 
+//--------------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------//
 
 bool operator!=(const BigNum& A, const BigNum& B) {
 	if (A.LongNum.size() != B.LongNum.size()) {
@@ -665,6 +666,15 @@ bool operator>=(const BigNum & A, const BigNum & B) {
 		}
 		return false;
 	}
+}
+
+//--------------------------------------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------//
+
+BigNum& BigNum::operator=(const BigNum& A) {
+	this->LongNum = A.LongNum;
+	this->sign = A.sign;
+	return *this;
 }
 
 BigNum operator+(const BigNum & A, const BigNum & B) {
