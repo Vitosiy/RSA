@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <locale>
 #include <Windows.h>
+#include <io.h>
 
 
 

@@ -13,6 +13,7 @@ public:
 	BigNum();
 	BigNum(unsigned int x);
 	BigNum(const std::string& Str);
+	BigNum(const unsigned int BlockSize, const unsigned int Offset, ifstream& Filename);
 	
 	//--------------------------------------------------------------------------------------------------------//
 

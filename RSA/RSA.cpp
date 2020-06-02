@@ -49,7 +49,7 @@ BigNum RSA::calculateD(BigNum& e, BigNum& phi, BigNum& p, BigNum& q) {
 //--------------------------------------------------------------------------------------------------------//
 
 void RSA::encode(const std::string& pathToInputText, const std::string& pathToPublicKey, const unsigned int mode) {
-	std::ifstream fileText(pathToInputText, std::ios::binary | std::ios::in);
+	std::ifstream fileText(pathToInputText, std::ios::binary | std::ios::in), fileText2("outputEncode.txt", std::ios::binary | std::ios::in);
 	if (!fileText) {
 		std::cout << "Wrong path to text" << std::endl;
 		return;
@@ -78,45 +78,49 @@ void RSA::encode(const std::string& pathToInputText, const std::string& pathToPu
 		eFile.close();
 	}
 	std::ofstream fileOutputText("outputEncode.txt", std::ios::out);
-	char* tmp = new char[BlockSize];
-	while (!fileText.eof()) {
-		fileText.read(tmp, BlockSize);
-		BigNum Block(tmp);
-		BigNum res = BigNum::FastPow(Block,e,n);
+	std::ofstream fileOutputText2("outputDecode.txt", std::ios::out);
+
+	fileText.seekg(0, std::ios::end);
+	int sizeFile = fileText.tellg();
+	for (int i = 0; i < sizeFile; i += BlockSize)
+	{
+		BigNum tmp(BlockSize, i, fileText);
+		BigNum res = BigNum::FastPow(tmp, e, n);
 		res.PrintF(fileOutputText);
+		BigNum res2 = (BigNum::FastPow(res, d, n));
+		res2.PrintF(fileOutputText2);
+		if (i > sizeFile) break;
+
 	}
+	
 	fileText.close();
 	fileOutputText.close();
-	delete[] tmp;
+	fileText2.close();
+	fileOutputText2.close();
 }
 
 //--------------------------------------------------------------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------//
 
 void RSA::decode(const std::string& pathToText, const std::string& pathToPrivateKey) {
-	//string nStr, dStr;
-	//std::ifstream dFile(pathToPrivateKey, std::ios::in), fileText(pathToText, std::ios::binary | std::ios::in);
-	std::ifstream dFile("privateKey.txt", std::ios::binary | std::ios::in), fileText("outputEncode.txt", std::ios::binary | std::ios::in);
-
-	char* tmp = new char[BlockSize]; 
-	char* dStr = new char[BlockSize];
-	char* nStr = new char[BlockSize];
-	dFile.read(dStr, BlockSize);
-	dFile.read(nStr, BlockSize);
-
-
-
+	ifstream dFile("privateKey.txt", std::ios::binary | std::ios::in), fileText("outputEncode.txt", std::ios::binary | std::ios::in);
+	
+	BigNum d(BlockSize, 0, dFile);
+	BigNum n(BlockSize, BlockSize, dFile);
 	dFile.close();
-	BigNum n(nStr);
-	BigNum d(dStr);
+		
 	std::ofstream fileOutputText("outputDecode.txt", std::ios::out);
-	while (!fileText.eof()) {
-		fileText.read(tmp, BlockSize);
-		BigNum Block(tmp);
-		BigNum res = (BigNum::FastPow(Block, d, n));
+	fileText.seekg(0, std::ios::end);
+	int sizeFile = fileText.tellg();
+	for (int i = 0; i < sizeFile; i += BlockSize)
+	{
+		BigNum tmp(BlockSize, i, fileText);
+		BigNum res = BigNum::FastPow(tmp, d, n);
 		res.PrintF(fileOutputText);
+		if (i > sizeFile) break;
+
 	}
+
 	fileText.close();
 	fileOutputText.close();
-	delete[] tmp;
 }
