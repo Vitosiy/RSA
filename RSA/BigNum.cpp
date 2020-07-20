@@ -58,9 +58,12 @@ BigNum::BigNum(const unsigned int BlockSize, const unsigned int Offset, ifstream
 		std::reverse(LongNum.begin(), LongNum.end());
 		std::fill(std::begin(Tmp), std::begin(Tmp) + 4, NULL);
 	}
+	std::reverse(LongNum.begin(), LongNum.end());
 	while ((this->LongNum.size() > 1) and (this->LongNum.back() == 0)) {
 		this->LongNum.pop_back();
 	}
+	std::reverse(LongNum.begin(), LongNum.end());
+
 	this->NumCreated = 1;
 }
 
@@ -89,13 +92,22 @@ void BigNum::PrintP(bool flag) {
 	}
 }
 
-void BigNum::PrintF(ofstream& filename)
+void BigNum::PrintF(ofstream& filename, bool flag)
 {
-	for (auto it = LongNum.crbegin(); it != LongNum.crend(); ++it) {
+	if (flag == 1) {
+		for (auto it = LongNum.crbegin(); it != LongNum.crend(); ++it) {
 
-		filename << std::hex << *it;
+			filename << (char)(*it >> 24) << (char)(*it >> 16) << (char)(*it >> 8) << (char)(*it);
+		}
+		std::cout << std::endl;
 	}
-	filename << std::endl;
+	if (flag == 0) {
+		for (auto it = LongNum.crbegin(); it != LongNum.crend(); ++it) {
+
+			filename << std::hex << *it;
+		}
+		filename << std::endl;
+	}
 
 }
 
@@ -110,11 +122,12 @@ unsigned int BigNum::Size()
 BigNum BigNum::Add(const BigNum& A, const BigNum& B)
 {
 	BigNum _A = A, _B = B, One(1), result;
+	bool flag = false;
 	unsigned int size_a = _A.Size(), size_b = _B.Size(), length;
 	if ((A.sign == false) & (B.sign == true)) { _B.sign == false; result = _A - _B; }
 	else if ((A.sign == true) & (B.sign == false)) { _A.sign = false; result = _B - _A; }
 	else {
-		if ((A.sign == true) & (B.sign == true)) { result.sign = true; };
+		if ((A.sign == true) & (B.sign == true)) { _A.sign = false; _B.sign = false; flag = true; };
 		if (size_b > size_a) {
 
 			length = size_b;
@@ -149,16 +162,17 @@ BigNum BigNum::Add(const BigNum& A, const BigNum& B)
 		};
 		result = _A;
 	}
-
+	if (flag == true) result.sign = true;
 	return result;
 }
 
 BigNum BigNum::Sub(const BigNum& A, const BigNum& B)
 {
 	BigNum _A = A, _B = B, result;
+	bool flag = false;
 	unsigned int size_a = _A.Size(), size_b = _B.Size(), length = size_a;
 	if ((A.sign == false) & (B.sign == true)) { _B.sign = false; result = _A + _B; }
-	else if ((A.sign == true) & (B.sign == false)) { _B.sign = true; result = _A + _B; }
+	else if ((A.sign == true) & (B.sign == false)) { _B.sign = true; result = _A + _B; result.sign = true; }
 	else {
 		if (_A == _B) return _A = 0;
 		if ((A.sign == true) & (B.sign == true)) {
@@ -176,33 +190,8 @@ BigNum BigNum::Sub(const BigNum& A, const BigNum& B)
 			size_a = _A.Size();
 			size_b = _B.Size();
 			length = size_a;
-			result.sign = true;
+			flag = true;
 		}
-
-		/*else if (size_a == size_b) {
-			if (_A.LongNum[length - 1] < _B.LongNum[length - 1]) {
-				_A = B;
-				_B = A;
-				size_a = _A.Size();
-				size_b = _B.Size();
-				length = size_a;
-			}
-			else if (_A.LongNum[length - 1] == _B.LongNum[length - 1]) {
-				for (int ix = length - 1; ix > 0; ix--) { // поразрядное сравнение весов чисел
-					if (_A.LongNum[ix] > _B.LongNum[ix]) {
-						break;
-					}
-					if (_A.LongNum[ix] < _B.LongNum[ix]) {// если разряд первого числа больше
-						_A = B;
-						_B = A;
-						size_a = _A.Size();
-						size_b = _B.Size();
-						length = size_a;
-						break;
-					}
-				}
-			}
-		}*/
 
 		for (int ix = 0; ix < length; ix++) {// проход по всем разрядам числа, начиная с последнего, не доходя до первого
 			if (ix >= size_b) {
@@ -221,6 +210,7 @@ BigNum BigNum::Sub(const BigNum& A, const BigNum& B)
 		};
 		result = _A;
 	}
+	if (flag == true) result.sign = true;
 	return result;
 }
 
@@ -234,7 +224,6 @@ void BigNum::Mul(const BigNum& A, const BigNum& B, BigNum& Res) {
 	BigNum _A = A, _B = B, result;
 	vector<unsigned int> res(A.LongNum.size() + B.LongNum.size());
 	unsigned long long cur;
-
 	if ((A.sign == true) & (B.sign == true)) { _A.sign = false; _B.sign = false; }
 	for (unsigned int i = 0; i < _A.LongNum.size(); i++) {
 		for (unsigned int j = 0, carryover = 0; j < _B.LongNum.size() || carryover; j++) {
@@ -288,21 +277,23 @@ void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivisi
 		res.LongNum.push_back(0);
 	BigNum tmp_A = _A.LongNum[size_a - 1];
 	unsigned int size = size_a - 1;
-	//if (size_a == 1) size = (size_a - 1);
-	//else size = (size_a - 2);
+	int count = 1;
 	for (int i = size; i >= 0; )
 	{
 		int ix = i;
 		while ((tmp_A <= _B) and (i > 0)) {
 			reverse(tmp_A.LongNum.begin(), tmp_A.LongNum.end());
-			tmp_A.LongNum.push_back(_A.LongNum[i - 1]);
+			//if (i == 0) tmp_A.LongNum.push_back(_A.LongNum[i]);
+			tmp_A.LongNum.push_back(_A.LongNum[i - count]);
 			reverse(tmp_A.LongNum.begin(), tmp_A.LongNum.end());
 			while ((tmp_A.Size() > 1) and (tmp_A.LongNum.back() == 0)) {
 				tmp_A.LongNum.pop_back();
 			};
+			count++;
 			if (ix > 0) ix--;
 			else break;
 		};
+		count = 1;
 		BigNum tmp;
 		unsigned int size_tmp = tmp_A.Size();
 		if (tmp_A.Size() > size_b) {
@@ -316,7 +307,13 @@ void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivisi
 			}
 			tmp_A = tmp_A - tmp;
 			res.LongNum[i] = d_tmp;
-			if (i == ix) i--;
+			if (ix == 0) i = -1;
+			else if ((i == ix) and (i > 0)) {
+				reverse(tmp_A.LongNum.begin(), tmp_A.LongNum.end());
+				tmp_A.LongNum.push_back(_A.LongNum[i - 1]);
+				reverse(tmp_A.LongNum.begin(), tmp_A.LongNum.end());
+				i--;
+			}
 			else i = ix;
 		}
 		else {
@@ -326,17 +323,23 @@ void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivisi
 			}
 			tmp_A = tmp_A - tmp;
 			res.LongNum[i] = res_t;
-			if (i == ix) i--;
+			if (ix == 0) i = -1;
+			else if ((i == ix) and (i > 0)) {
+				reverse(tmp_A.LongNum.begin(), tmp_A.LongNum.end());
+				tmp_A.LongNum.push_back(_A.LongNum[i - 1]);
+				reverse(tmp_A.LongNum.begin(), tmp_A.LongNum.end());
+				i--;
+			}
 			else i = ix;
 		};
 	}
 	// избавляемся от лидирующих нулей
 	if (res.Size() > 1) {
-		reverse(res.LongNum.begin(), res.LongNum.end());
+		//reverse(res.LongNum.begin(), res.LongNum.end());
 		while (res.LongNum.back() == 0) {
 			res.LongNum.pop_back();
 		};
-		reverse(res.LongNum.begin(), res.LongNum.end());
+		//reverse(res.LongNum.begin(), res.LongNum.end());
 	}
 	BigNum curValue = tmp_A;
 
@@ -349,15 +352,12 @@ void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivisi
 	else
 	{
 		if (curValue.Size() > 1) {
-			reverse(curValue.LongNum.begin(), curValue.LongNum.end());
 			while (curValue.LongNum.back() == 0) {
 				curValue.LongNum.pop_back();
 			};
-			reverse(curValue.LongNum.begin(), curValue.LongNum.end());
 		}
 		Reminder = curValue;
 		if (((A.sign == false) & (B.sign == true)) | ((A.sign == true) & (B.sign == false))) { Reminder.sign = true; }
-
 	}
 }
 
@@ -366,9 +366,15 @@ void BigNum::Div(const BigNum& A, const BigNum& B, BigNum& IntegerResultOfDivisi
 
 std::string BigNum::ToBin() {
 	std::string res;
-	for (unsigned int i = 0; i < this->LongNum.size(); i++) {
+	for (int i = this->LongNum.size()-1; i >= 0 ; i--) {
 		res = res + (std::bitset<32>(this->LongNum[i])).to_string();
 	}
+
+	reverse(res.begin(), res.end());
+	while (res.back() == '0') {
+		res.pop_back();
+	};
+	reverse(res.begin(), res.end());
 
 	return res;
 
@@ -396,14 +402,12 @@ BigNum BigNum::FastPow(BigNum& Num, BigNum& Deg, BigNum& Mod) {
 	std::string deg = Deg.ToBin();
 
 	//2:
-	unsigned int n = (deg.size() - 1);
+	unsigned int n = deg.size();
 
 	//3:
 	vector<BigNum> Mass(n);
 	BigNum cur;
 	Mass[0] = _Num % _Mod;
-	BigNum IntDivRes(0), Rem(0);
-	bool Flag = false;
 	for (unsigned int i = 1; i < n; i++) {
 		cur = Mass[i - 1] * Mass[i - 1];
 		Mass[i] = cur % _Mod;
@@ -412,7 +416,7 @@ BigNum BigNum::FastPow(BigNum& Num, BigNum& Deg, BigNum& Mod) {
 	//4:
 	BigNum ResRes(1);
 	for (unsigned int i = 0; i < n; i++) {
-		ResRes = ResRes * Mass[i].Pow(deg[n - i] - 48);
+		ResRes = ResRes * Mass[i].Pow(deg[(n - 1) - i] - 48);
 	}
 	BigNum result = ResRes % _Mod;
 
