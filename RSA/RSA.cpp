@@ -105,6 +105,7 @@ void RSA::decode(const std::string& pathToText, const std::string& pathToPrivate
 	int sizeFile = fileText.tellg();
 	for (int i = 0; i < sizeFile;)
 	{
+		if (sizeFile - i < BlockSize) break;
 		BigNum tmp(BlockSize, i, fileText);
 		BigNum res = BigNum::FastPow(tmp, d, n);
 		res.PrintF(fileOutputText,1);
