@@ -46,7 +46,7 @@ void RSA::encode(const std::string& pathToInputText, const std::string& pathToPu
 		BigNum phi = (p - BigNum(1)) * (q - BigNum(1));
 		calculateE();
 		d = calculateD(e, phi, p, q);
-		std::ofstream eFile("publicKey.txt", std::ios::out), dFile("privateKey.txt", std::ios::out);
+		std::ofstream eFile("publicKey.txt", std::ios::out | std::ios::binary), dFile("privateKey.txt", std::ios::out | std::ios::binary);
 		e.PrintF(eFile,1);
 		n.PrintF(eFile,1);
 		d.PrintF(dFile,1);
@@ -65,43 +65,58 @@ void RSA::encode(const std::string& pathToInputText, const std::string& pathToPu
 		eFile.close();
 	}
 
-	std::ofstream fileOutputText("outputEncode.txt", std::ios::out);
+	std::ofstream fileOutputText("outputEncode.txt", std::ios::out | std::ios::binary);
 
+	unsigned int start_time = clock();
 	fileText.seekg(0, std::ios::end);
 	int sizeFile = fileText.tellg();
-	for (int i = 0; i < sizeFile; i += BlockSize)
+	for (int i = 0; i < sizeFile;)
 	{
 		BigNum tmp(BlockSize, i, fileText);
 		BigNum res = BigNum::FastPow(tmp, e, n);
 		res.PrintF(fileOutputText,1);
+		i += BlockSize;
 		if (i > sizeFile) break;
 	}
+	unsigned int end_time = clock();
 	
 	fileText.close();
 	fileOutputText.close();
+	unsigned int search_time = end_time - start_time;
+	printf("Время шифрования файла: %d млс", search_time);
+	cout << endl;
+	system("pause");
 }
 
 //--------------------------------------------------------------------------------------------------------//
 //--------------------------------------------------------------------------------------------------------//
 
 void RSA::decode(const std::string& pathToText, const std::string& pathToPrivateKey) {
-	ifstream dFile("privateKey.txt", std::ios::binary | std::ios::in), fileText("outputEncode.txt", std::ios::binary | std::ios::in);
+	ifstream dFile(pathToPrivateKey, std::ios::binary | std::ios::in), fileText(pathToText, std::ios::binary | std::ios::in);
 	
 	BigNum d(BlockSize, 0, dFile);
-	BigNum n(BlockSize, BlockSize, dFile);
+	BigNum n(BlockSize, BlockSize + 3, dFile);
 	dFile.close();
-		
-	std::ofstream fileOutputText("outputDecode.txt", std::ios::out);
+	
+	std::ofstream fileOutputText("outputDecode.txt", std::ios::out | std::ios::binary);
+
+	unsigned int start_time = clock();
 	fileText.seekg(0, std::ios::end);
 	int sizeFile = fileText.tellg();
-	for (int i = 0; i < sizeFile; i += BlockSize)
+	for (int i = 0; i < sizeFile;)
 	{
 		BigNum tmp(BlockSize, i, fileText);
 		BigNum res = BigNum::FastPow(tmp, d, n);
 		res.PrintF(fileOutputText,1);
+		i += BlockSize;
 		if (i > sizeFile) break;
 	}
+	unsigned int end_time = clock();
 
 	fileText.close();
 	fileOutputText.close();
+	unsigned int search_time = end_time - start_time;
+	printf("Время дешифрования файла: %d млс", search_time);
+	cout << endl;
+	system("pause");
 }

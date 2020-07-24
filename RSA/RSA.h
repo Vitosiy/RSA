@@ -1,7 +1,7 @@
 #pragma once
 #include "BigNum.h"
 #include <mpirxx.h>
-#include <time.h>
+#include <ctime>
 #include <fstream>
 #include <algorithm>
 #include <locale>

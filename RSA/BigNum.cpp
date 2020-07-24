@@ -77,12 +77,13 @@ BigNum::BigNum(const std::string& Str) {
 BigNum::BigNum(const unsigned int BlockSize, const unsigned int Offset, ifstream& Filename) {
 	Filename.seekg(Offset);
 	char Tmp[4];
-	for (int i = BlockSize; i >= 0; i = i - 4) {
+	for (int i = BlockSize; i > 0;) {
 		Filename.read(Tmp, 4);
 		std::reverse(LongNum.begin(), LongNum.end());
 		this->LongNum.push_back((int)((unsigned char)Tmp[0] << 24) | (int)((unsigned char)Tmp[1] << 16) | (int)((unsigned char)Tmp[2] << 8) | (int)((unsigned char)Tmp[3]));
 		std::reverse(LongNum.begin(), LongNum.end());
 		std::fill(std::begin(Tmp), std::begin(Tmp) + 4, NULL);
+		i = i - 4;
 	}
 	std::reverse(LongNum.begin(), LongNum.end());
 	while ((this->LongNum.size() > 1) and (this->LongNum.back() == 0)) {
