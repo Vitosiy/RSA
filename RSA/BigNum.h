@@ -12,8 +12,11 @@ class BigNum {
 public:
 	BigNum();
 	BigNum(unsigned int x);
-	BigNum(const std::string& Str);
+	BigNum(const std::string& str);
+	//BigNum(const std::string& Str);
 	BigNum(const unsigned int BlockSize, const unsigned int Offset, ifstream& Filename);
+
+	vector<unsigned int> convert(std::string& Str);
 	
 	//--------------------------------------------------------------------------------------------------------//
 
@@ -60,7 +63,5 @@ public:
 private:
 	void PrintP(bool flag);
 	std::vector<unsigned int> LongNum;
-	bool Sing : 1;
-	bool NumCreated : 1;
 	bool sign = false;
 };

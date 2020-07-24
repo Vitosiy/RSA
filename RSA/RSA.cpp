@@ -1,7 +1,7 @@
 #include "RSA.h"
 
-#define BlockSize 16
-#define p_q_size 32
+#define BlockSize 125 //значения в байтах
+#define p_q_size 512 //значение в битах
 
 void RSA::generatePQ(BigNum& _p, BigNum& _q, int bit) {
 	mpz_t p,q;
@@ -13,31 +13,20 @@ void RSA::generatePQ(BigNum& _p, BigNum& _q, int bit) {
 	mpz_urandomb(q, state, bit);
 	mpz_nextprime(p, p);
 	mpz_nextprime(q, q);
-	_p = std::string(mpz_get_str(NULL, 10, p));
-	_q = std::string(mpz_get_str(NULL, 10, q));
+	_p = std::string(mpz_get_str(NULL, 16, p));
+	_q = std::string(mpz_get_str(NULL, 16, q));
 }
 
 void RSA::calculateE() {
 	long long ferm[] = { 3, 5, 17, 257, 65537, 4294967297 };
 	srand(time(NULL));
-	//e = BigNum(ferm[rand() % 5]);
-	e = 257;
+	e = BigNum(ferm[rand() % 5]);
 }
 
 BigNum RSA::calculateD(BigNum& e, BigNum& phi, BigNum& p, BigNum& q) {
 	BigNum d, y;
 	BigNum g = BigNum::Evk(e, phi, d, y);
-	while (!(g == 1)) {
-		generatePQ(p, q, p_q_size);
-		n = p * q;
-		BigNum phi = (p - BigNum(1)) * (q - BigNum(1));
-		calculateE();
-		BigNum g = BigNum::Evk(e, phi, d, y);
-	};
-
 	d = (d % phi + phi) % phi;
-	//BigNum tmp = (d * e)%phi;
-	//if(tmp == 1)
 	return d;
 }
 
@@ -45,7 +34,7 @@ BigNum RSA::calculateD(BigNum& e, BigNum& phi, BigNum& p, BigNum& q) {
 //--------------------------------------------------------------------------------------------------------//
 
 void RSA::encode(const std::string& pathToInputText, const std::string& pathToPublicKey, const unsigned int mode) {
-	std::ifstream fileText(pathToInputText, std::ios::binary | std::ios::in), fileText2("outputEncode.txt", std::ios::binary | std::ios::in);
+	std::ifstream fileText(pathToInputText, std::ios::binary | std::ios::in);
 	if (!fileText) {
 		std::cout << "Wrong path to text" << std::endl;
 		return;
@@ -58,23 +47,25 @@ void RSA::encode(const std::string& pathToInputText, const std::string& pathToPu
 		calculateE();
 		d = calculateD(e, phi, p, q);
 		std::ofstream eFile("publicKey.txt", std::ios::out), dFile("privateKey.txt", std::ios::out);
-		e.PrintF(eFile,0);
-		n.PrintF(eFile,0);
-		d.PrintF(dFile,0);
-		n.PrintF(dFile,0);
+		e.PrintF(eFile,1);
+		n.PrintF(eFile,1);
+		d.PrintF(dFile,1);
+		n.PrintF(dFile,1);
 		eFile.close();
 		dFile.close();
 	}
 	else {
-		std::ifstream eFile(pathToPublicKey, std::ios::in);
-		std::string eStr, nStr;
-		eFile >> eStr >> nStr;
-		n = nStr;
-		e = eStr;
+		std::ifstream eFile(pathToPublicKey, std::ios::in | std::ios::binary);
+		BigNum e1(4, 0, eFile);
+		BigNum n1(BlockSize, 4, eFile);
+
+		e = e1;
+		n = n1;
+
 		eFile.close();
 	}
+
 	std::ofstream fileOutputText("outputEncode.txt", std::ios::out);
-	std::ofstream fileOutputText2("outputDecode.txt", std::ios::out);
 
 	fileText.seekg(0, std::ios::end);
 	int sizeFile = fileText.tellg();
@@ -83,16 +74,11 @@ void RSA::encode(const std::string& pathToInputText, const std::string& pathToPu
 		BigNum tmp(BlockSize, i, fileText);
 		BigNum res = BigNum::FastPow(tmp, e, n);
 		res.PrintF(fileOutputText,1);
-		BigNum res2 = (BigNum::FastPow(res, d, n));
-		res2.PrintF(fileOutputText2,1);
 		if (i > sizeFile) break;
-
 	}
 	
 	fileText.close();
 	fileOutputText.close();
-	fileText2.close();
-	fileOutputText2.close();
 }
 
 //--------------------------------------------------------------------------------------------------------//
@@ -114,7 +100,6 @@ void RSA::decode(const std::string& pathToText, const std::string& pathToPrivate
 		BigNum res = BigNum::FastPow(tmp, d, n);
 		res.PrintF(fileOutputText,1);
 		if (i > sizeFile) break;
-
 	}
 
 	fileText.close();

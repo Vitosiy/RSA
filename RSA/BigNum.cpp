@@ -13,40 +13,66 @@ BigNum::BigNum(unsigned int x)
 
 BigNum::BigNum(const std::string& Str) {
 	std::string SubStr;
+	
 
-	for (unsigned int i = 0; i < Str.size(); i = i + 4) {
-		if (i + 4 > Str.size()) {
+	for (unsigned int i = 0; i < Str.size(); i = i + 8) {
+		if (i + 8 > Str.size()) {
 			SubStr = std::string(Str.begin() + i, Str.end());
-			if (Str.size() - (i + 4) == -1)
+			vector<unsigned int> int_str = BigNum::convert(SubStr);
+			if (Str.size() - (i + 8) == -1)
 			{
 				std::reverse(LongNum.begin(), LongNum.end());
-				this->LongNum.push_back((int)((unsigned char)SubStr[0] << 24) | (int)((unsigned char)SubStr[1] << 16) | (int)((unsigned char)SubStr[2] << 8));
+				this->LongNum.push_back((int_str[0] << 28) | (int_str[1] << 24) | (int_str[2] << 20) | (int_str[3] << 16) | (int_str[4] << 12) | (int_str[5] << 8) | (int_str[6] << 4));
 				std::reverse(LongNum.begin(), LongNum.end());
 			}
-			if (Str.size() - (i + 4) == -2)
+			if (Str.size() - (i + 8) == -2)
 			{
 				std::reverse(LongNum.begin(), LongNum.end());
-				this->LongNum.push_back((int)((unsigned char)SubStr[0] << 24) | (int)((unsigned char)SubStr[1] << 16));
+				this->LongNum.push_back((int_str[0] << 28) | (int_str[1] << 24) | (int_str[2] << 20) | (int_str[3] << 16) | (int_str[4] << 12) | (int_str[5] << 8));
 				std::reverse(LongNum.begin(), LongNum.end());
 			}
-			if (Str.size() - (i + 4) == -3)
+			if (Str.size() - (i + 8) == -3)
 			{
 				std::reverse(LongNum.begin(), LongNum.end());
-				this->LongNum.push_back((int)((unsigned char)SubStr[0] << 24));
+				this->LongNum.push_back((int_str[0] << 28) | (int_str[1] << 24) | (int_str[2] << 20) | (int_str[3] << 16) | (int_str[4] << 12));
+				std::reverse(LongNum.begin(), LongNum.end());
+			}
+			if (Str.size() - (i + 8) == -4)
+			{
+				std::reverse(LongNum.begin(), LongNum.end());
+				this->LongNum.push_back((int_str[0] << 28) | (int_str[1] << 24) | (int_str[2] << 20) | (int_str[3] << 16));
+				std::reverse(LongNum.begin(), LongNum.end());
+			}
+			if (Str.size() - (i + 8) == -5)
+			{
+				std::reverse(LongNum.begin(), LongNum.end());
+				this->LongNum.push_back((int_str[0] << 28) | (int_str[1] << 24) | (int_str[2] << 20));
+				std::reverse(LongNum.begin(), LongNum.end());
+			}
+			if (Str.size() - (i + 8) == -6)
+			{
+				std::reverse(LongNum.begin(), LongNum.end());
+				this->LongNum.push_back((int_str[0] << 28) | (int_str[1] << 24));
+				std::reverse(LongNum.begin(), LongNum.end());
+			}
+			if (Str.size() - (i + 8) == -7)
+			{
+				std::reverse(LongNum.begin(), LongNum.end());
+				this->LongNum.push_back(int_str[0] << 28);
 				std::reverse(LongNum.begin(), LongNum.end());
 			}
 		}
 		else {
-			SubStr = std::string(Str.begin() + i, Str.begin() + i + 4);
+			SubStr = std::string(Str.begin() + i, Str.begin() + i + 8);
+			vector<unsigned int> int_str = BigNum::convert(SubStr);
 			std::reverse(LongNum.begin(), LongNum.end());
-			this->LongNum.push_back((int)((unsigned char)SubStr[0] << 24) | (int)((unsigned char)SubStr[1] << 16) | (int)((unsigned char)SubStr[2] << 8) | (int)((unsigned char)SubStr[3]));
+			this->LongNum.push_back((int_str[0] << 28) | (int_str[1] << 24) | (int_str[2] << 20) | (int_str[3] << 16) | (int_str[4] << 12) | (int_str[5] << 8) | (int_str[6] << 4) | (int_str[7]));
 			std::reverse(LongNum.begin(), LongNum.end());
-			std::fill(std::begin(SubStr), std::begin(SubStr) + 4, NULL);
+			std::fill(std::begin(SubStr), std::begin(SubStr) + 8, NULL);			
 		}
 	}
-
-	this->Sing = 0;
 }
+
 
 BigNum::BigNum(const unsigned int BlockSize, const unsigned int Offset, ifstream& Filename) {
 	Filename.seekg(Offset);
@@ -63,8 +89,17 @@ BigNum::BigNum(const unsigned int BlockSize, const unsigned int Offset, ifstream
 		this->LongNum.pop_back();
 	}
 	std::reverse(LongNum.begin(), LongNum.end());
+}
 
-	this->NumCreated = 1;
+
+vector<unsigned int> BigNum::convert(std::string& Str) {
+	vector<unsigned int> res;
+	for (unsigned int i = 0; i < Str.size(); i++) {
+		if (Str[i] >= '0' && Str[i] <= '9') res.push_back( Str[i] - '0');
+		else if (Str[i] >= 'a' && Str[i] <= 'f') res.push_back(Str[i] - 'a' + 10);
+		else break;
+	}
+	return res;
 }
 
 //--------------------------------------------------------------------------------------------------------//
