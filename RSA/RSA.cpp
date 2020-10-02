@@ -1,6 +1,7 @@
 #include "RSA.h"
 
-#define BlockSize 125 //значения в байтах
+#define BlockSize 110 //значения в байтах
+#define BlockSizeDec 126 //значения в байтах
 #define p_q_size 512 //значение в битах
 
 void RSA::generatePQ(BigNum& _p, BigNum& _q, int bit) {
@@ -18,9 +19,10 @@ void RSA::generatePQ(BigNum& _p, BigNum& _q, int bit) {
 }
 
 void RSA::calculateE() {
-	long long ferm[] = { 3, 5, 17, 257, 65537, 4294967297 };
+	long long ferm[] = {3, 5, 17, 257, 65537, 4294967297 };
 	srand(time(NULL));
-	e = BigNum(ferm[rand() % 5]);
+	//e = BigNum(ferm[rand() % 5]);
+	e = 257;
 }
 
 BigNum RSA::calculateD(BigNum& e, BigNum& phi, BigNum& p, BigNum& q) {
@@ -75,7 +77,7 @@ void RSA::encode(const std::string& pathToInputText, const std::string& pathToPu
 		BigNum tmp(BlockSize, i, fileText);
 		BigNum res = BigNum::FastPow(tmp, e, n);
 		res.PrintF(fileOutputText,1);
-		i += BlockSize;
+		i += (BlockSize + 2);
 		if (i > sizeFile) break;
 	}
 	unsigned int end_time = clock();
@@ -94,8 +96,8 @@ void RSA::encode(const std::string& pathToInputText, const std::string& pathToPu
 void RSA::decode(const std::string& pathToText, const std::string& pathToPrivateKey) {
 	ifstream dFile(pathToPrivateKey, std::ios::binary | std::ios::in), fileText(pathToText, std::ios::binary | std::ios::in);
 	
-	BigNum d(BlockSize, 0, dFile);
-	BigNum n(BlockSize, BlockSize + 3, dFile);
+	BigNum d(BlockSizeDec, 0, dFile);
+	BigNum n(BlockSizeDec, BlockSizeDec + 2, dFile);
 	dFile.close();
 	
 	std::ofstream fileOutputText("outputDecode.txt", std::ios::out | std::ios::binary);
@@ -105,11 +107,11 @@ void RSA::decode(const std::string& pathToText, const std::string& pathToPrivate
 	int sizeFile = fileText.tellg();
 	for (int i = 0; i < sizeFile;)
 	{
-		if (sizeFile - i < BlockSize) break;
-		BigNum tmp(BlockSize, i, fileText);
+		if (sizeFile - i < BlockSizeDec) break;
+		BigNum tmp(BlockSizeDec, i, fileText);
 		BigNum res = BigNum::FastPow(tmp, d, n);
 		res.PrintF(fileOutputText,1);
-		i += BlockSize;
+		i += (BlockSizeDec + 2);
 		if (i > sizeFile) break;
 	}
 	unsigned int end_time = clock();
